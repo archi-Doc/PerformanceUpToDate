@@ -23,7 +23,6 @@ namespace PerformanceUpToDate
             // var summary = BenchmarkRunner.Run<ByteCopyTest>(); // SwapTest, MemoryAllocationTest, ByteCopyTest
             var switcher = new BenchmarkSwitcher(new[]
             {
-                typeof(SwapTest),
                 typeof(MemoryAllocationTest),
                 typeof(ByteCopyTest),
             });
@@ -40,48 +39,8 @@ namespace PerformanceUpToDate
 
             // this.Add(Job.ShortRun.With(BenchmarkDotNet.Environments.Platform.X64).WithWarmupCount(1).WithIterationCount(1));
             // this.Add(BenchmarkDotNet.Jobs.Job.MediumRun.WithGcForce(true).WithId("GcForce medium"));
-            this.Add(BenchmarkDotNet.Jobs.Job.ShortRun);
-        }
-    }
-
-    [Config(typeof(BenchmarkConfig))]
-    public class SwapTest
-    {
-        private int x = 0;
-        private int y = 1;
-        private int z = 0;
-        private SwapClass swap;
-
-        public SwapTest()
-        {
-            this.swap = new SwapClass();
-        }
-
-        [Benchmark]
-        public SwapClass Swap_Temp()
-        {
-            int temp;
-
-            temp = this.swap.a;
-            this.swap.a = this.swap.b;
-            this.swap.b = temp;
-
-            return this.swap;
-        }
-
-        [Benchmark]
-        public SwapClass Swap_Tuple()
-        {
-            (this.swap.a, this.swap.b) = (this.swap.b, this.swap.a);
-
-            return this.swap;
-        }
-
-        public class SwapClass
-        {
-            public int a = 0;
-            public int b = 1;
-            public int c = 2;
+            this.Add(BenchmarkDotNet.Jobs.Job.MediumRun);
+            // this.Add(BenchmarkDotNet.Jobs.Job.ShortRun);
         }
     }
 
