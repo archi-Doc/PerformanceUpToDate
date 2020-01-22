@@ -18,19 +18,21 @@ namespace PerformanceUpToDate
 
         public ByteCopyTest()
         {
-            this.source = new byte[this.Size];
-            this.destination = new byte[this.Size];
+            this.source = null!;
+            this.destination = null!;
 
             this.Setup();
         }
 
-        // [Params(10, 1024, 1_000_000)]
+        // [Params(10, 1_000_000)]
         [Params(10, 20, 32, 256, 1024, 4_000, 32_000, 1_000_000)]
         public int Size { get; set; }
 
         [GlobalSetup]
         public void Setup()
         {
+            this.source = new byte[this.Size];
+            this.destination = new byte[this.Size];
             new Random(42).NextBytes(this.source);
         }
 
