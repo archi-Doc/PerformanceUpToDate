@@ -21,11 +21,17 @@ namespace PerformanceUpToDate
 
         public ByteCompareTest()
         {
+            this.source = null!;
+            this.destination = null!;
+
             this.Setup();
         }
 
         public ByteCompareTest(int size)
         {
+            this.source = null!;
+            this.destination = null!;
+
             this.Size = size;
             this.Setup();
         }
@@ -312,7 +318,9 @@ namespace PerformanceUpToDate
         }
 
         [DllImport("msvcrt.dll", CallingConvention = CallingConvention.Cdecl)]
+#pragma warning disable SA1300 // Element should begin with upper-case letter
         public static extern int memcmp(byte[] b1, byte[] b2, long count);
+#pragma warning restore SA1300 // Element should begin with upper-case letter
 
         [Benchmark]
         public bool ByteCompare_memcmp()
