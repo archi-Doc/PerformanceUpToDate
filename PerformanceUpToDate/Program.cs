@@ -23,6 +23,7 @@ namespace PerformanceUpToDate
             // var summary = BenchmarkRunner.Run<ByteCopyTest>(); // SwapTest, MemoryAllocationTest, ByteCopyTest
             var switcher = new BenchmarkSwitcher(new[]
             {
+                typeof(DelegateTest),
                 typeof(MemoryAllocationTest),
                 typeof(ByteCopyTest),
                 typeof(ByteCompareTest),
@@ -42,6 +43,53 @@ namespace PerformanceUpToDate
             // this.Add(BenchmarkDotNet.Jobs.Job.MediumRun.WithGcForce(true).WithId("GcForce medium"));
             // this.Add(BenchmarkDotNet.Jobs.Job.ShortRun);
             this.Add(BenchmarkDotNet.Jobs.Job.MediumRun);
+        }
+    }
+
+    [Config(typeof(BenchmarkConfig))]
+    public class DelegateTest
+    {
+        private uint count = 0;
+
+        private Func<uint, uint> increaseDelegate = (count) =>
+        {
+            unchecked
+            {
+                return count++;
+            }
+        };
+
+        public DelegateTest()
+        {
+        }
+
+        [Benchmark]
+        public uint Direct()
+        {
+            unchecked
+            {
+                return this.count++;
+            }
+        }
+
+        [Benchmark]
+        public uint Method()
+        {
+            return this.IncreaseMethod();
+        }
+
+        [Benchmark]
+        public uint Delegate()
+        {
+            return this.increaseDelegate(this.count);
+        }
+
+        private uint IncreaseMethod()
+        {
+            unchecked
+            {
+                return this.count++;
+            }
         }
     }
 
