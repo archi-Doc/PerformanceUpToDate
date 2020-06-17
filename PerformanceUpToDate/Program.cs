@@ -23,6 +23,7 @@ namespace PerformanceUpToDate
             // var summary = BenchmarkRunner.Run<ByteCopyTest>(); // SwapTest, MemoryAllocationTest, ByteCopyTest
             var switcher = new BenchmarkSwitcher(new[]
             {
+                typeof(StructTest),
                 typeof(DelegateTest),
                 typeof(MemoryAllocationTest),
                 typeof(ByteCopyTest),
