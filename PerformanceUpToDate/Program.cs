@@ -14,6 +14,8 @@ using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Order;
 using BenchmarkDotNet.Running;
 
+#pragma warning disable SA1515 // Single-line comment should be preceded by blank line
+
 namespace PerformanceUpToDate
 {
     public class Program
@@ -22,6 +24,7 @@ namespace PerformanceUpToDate
         {
             // var summary = BenchmarkRunner.Run<ByteCopyTest>(); // SwapTest, MemoryAllocationTest, ByteCopyTest
             var switcher = new BenchmarkSwitcher(new[]
+#pragma warning restore SA1515 // Single-line comment should be preceded by blank line
             {
                 typeof(StructTest),
                 typeof(DelegateTest),
@@ -37,13 +40,13 @@ namespace PerformanceUpToDate
     {
         public BenchmarkConfig()
         {
-            this.Add(BenchmarkDotNet.Exporters.MarkdownExporter.GitHub);
-            this.Add(BenchmarkDotNet.Diagnosers.MemoryDiagnoser.Default);
+            this.AddExporter(BenchmarkDotNet.Exporters.MarkdownExporter.GitHub);
+            this.AddDiagnoser(BenchmarkDotNet.Diagnosers.MemoryDiagnoser.Default);
 
             // this.Add(Job.ShortRun.With(BenchmarkDotNet.Environments.Platform.X64).WithWarmupCount(1).WithIterationCount(1));
             // this.Add(BenchmarkDotNet.Jobs.Job.MediumRun.WithGcForce(true).WithId("GcForce medium"));
             // this.Add(BenchmarkDotNet.Jobs.Job.ShortRun);
-            this.Add(BenchmarkDotNet.Jobs.Job.MediumRun);
+            this.AddJob(BenchmarkDotNet.Jobs.Job.MediumRun);
         }
     }
 

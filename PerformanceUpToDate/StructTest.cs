@@ -4,11 +4,11 @@ using System;
 using System.Reflection;
 using BenchmarkDotNet.Attributes;
 
+#pragma warning disable SA1649 // File name should match first type name
+
 namespace PerformanceUpToDate
 {
-#pragma warning disable SA1649 // File name should match first type name
     public struct DelegateKey
-#pragma warning restore SA1649 // File name should match first type name
     {
         public Type InstanceType;
         public MethodInfo Method;
@@ -20,6 +20,8 @@ namespace PerformanceUpToDate
         }
 
         public override int GetHashCode() => HashCode.Combine(this.InstanceType, this.Method);
+
+        public int GetHashCode_XOR() => this.InstanceType.GetHashCode() ^ this.Method.GetHashCode();
 
         public override bool Equals(object? obj)
         {
@@ -105,5 +107,11 @@ namespace PerformanceUpToDate
         {
             return this.key.Equals4(this.key2);
         }
+
+        [Benchmark]
+        public new int GetHashCode() => this.key.GetHashCode();
+
+        [Benchmark]
+        public int GetHashCode_XOR() => this.key.GetHashCode_XOR();
     }
 }
