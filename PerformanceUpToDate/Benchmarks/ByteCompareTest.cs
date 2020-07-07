@@ -36,7 +36,8 @@ namespace PerformanceUpToDate
             this.Setup();
         }
 
-        [Params(10, 32, 256, 1024, 1_000_000)]
+        // [Params(10, 32, 256, 1024, 1_000_000)]
+        [Params(10,  256, 2048)]
         public int Size { get; set; }
 
         [GlobalSetup]
@@ -59,6 +60,12 @@ namespace PerformanceUpToDate
         public bool ByteCompare_SequenceEqual()
         {
             return Enumerable.SequenceEqual(this.source, this.destination);
+        }
+
+        [Benchmark]
+        public bool ByteCompare_SequenceEqualSpan()
+        {
+            return this.source.AsSpan().SequenceEqual(this.destination);
         }
 
         [Benchmark]
