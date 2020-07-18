@@ -32,6 +32,7 @@ namespace PerformanceUpToDate
                 typeof(MemoryAllocationTest),
                 typeof(ByteCopyTest),
                 typeof(ByteCompareTest),
+                typeof(SpanTest),
             });
             switcher.Run(args);
         }
