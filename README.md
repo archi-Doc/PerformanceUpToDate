@@ -40,3 +40,15 @@ good old fashioned.
 
 8500B 以上：LOHを避けるため、ArrayPoolを使用する。
 
+
+
+## IDisposable
+
+```csharp
+using var a = new class();
+var b = new class();
+b.Dispose();
+using (var c = new class()) {}
+// same performance.
+```
+

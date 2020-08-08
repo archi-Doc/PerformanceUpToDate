@@ -17,15 +17,35 @@ namespace PerformanceUpToDate
     {
         public byte[] byteArray = default!;
         public byte[] byteArray2 = default!;
+        public ReadOnlyMemory<byte> memory;
 
         [GlobalSetup]
         public void Setup()
         {
             this.byteArray = new byte[1000];
             this.byteArray2 = new byte[1000];
+            this.memory = this.byteArray.AsMemory();
         }
 
         [Benchmark]
+        public ReadOnlySpan<byte> Span()
+        {
+            return this.byteArray.AsSpan();
+        }
+
+        [Benchmark]
+        public ReadOnlySpan<byte> MemoryToSpan()
+        {
+            return this.memory.Span;
+        }
+
+        [Benchmark]
+        public ReadOnlyMemory<byte> SpanToMemory()
+        {
+            return this.byteArray.AsSpan().ToArray().AsMemory();
+        }
+
+        /* [Benchmark]
         public Memory<byte> SpanTest_Memory()
         {
             return this.byteArray.AsMemory().Slice(10, 30);
@@ -42,7 +62,7 @@ namespace PerformanceUpToDate
         {
             var m = (Memory<byte>)this.byteArray;
             return m.Slice(10, 30);
-        }
+        }*/
 
         /*[Benchmark]
         public byte SpanTest_Copy()
