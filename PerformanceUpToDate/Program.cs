@@ -7,6 +7,7 @@
 using System;
 using System.Buffers;
 using System.Linq;
+using System.Reflection;
 using System.Security.Cryptography;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Engines;
@@ -22,19 +23,81 @@ namespace PerformanceUpToDate
     {
         public static void Main(string[] args)
         {
+            DebugRun<StreamTest>();
+
             // var summary = BenchmarkRunner.Run<ByteCopyTest>(); // SwapTest, MemoryAllocationTest, ByteCopyTest
             var switcher = new BenchmarkSwitcher(new[]
 #pragma warning restore SA1515 // Single-line comment should be preceded by blank line
             {
-                typeof(PerformanceUpToDate.NewInstance.NewInstanceTest),
+                typeof(NewInstance.NewInstanceTest),
                 typeof(StructTest),
                 typeof(DelegateTest),
                 typeof(MemoryAllocationTest),
                 typeof(ByteCopyTest),
                 typeof(ByteCompareTest),
                 typeof(SpanTest),
+                typeof(StreamTest),
             });
             switcher.Run(args);
+        }
+
+        public static void DebugRun<T>()
+            where T : new()
+        { // Run a benchmark in debug mode.
+            var t = new T();
+            var type = typeof(T);
+            var methods = type.GetMethods(BindingFlags.Public | BindingFlags.Instance);
+            var fields = type.GetFields(BindingFlags.Public | BindingFlags.Instance);
+            var properties = type.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+
+            foreach (var x in fields)
+            { // Set Fields.
+                var attr = (ParamsAttribute[])x.GetCustomAttributes(typeof(ParamsAttribute), false);
+                if (attr != null && attr.Length > 0)
+                {
+                    if (attr[0].Values.Length > 0)
+                    {
+                        x.SetValue(t, attr[0].Values[0]);
+                    }
+                }
+            }
+
+            foreach (var x in properties)
+            { // Set Properties.
+                var attr = (ParamsAttribute[])x.GetCustomAttributes(typeof(ParamsAttribute), false);
+                if (attr != null && attr.Length > 0)
+                {
+                    if (attr[0].Values.Length > 0)
+                    {
+                        x.SetValue(t, attr[0].Values[0]);
+                    }
+                }
+            }
+
+            foreach (var x in methods.Where(i => i.GetCustomAttributes(typeof(GlobalSetupAttribute), false).Length > 0))
+            { // [GlobalSetupAttribute]
+                x.Invoke(t, null);
+            }
+
+            foreach (var x in methods.Where(i => i.GetCustomAttributes(typeof(BenchmarkAttribute), false).Length > 0))
+            { // [BenchmarkAttribute]
+                x.Invoke(t, null);
+            }
+
+            foreach (var x in methods.Where(i => i.GetCustomAttributes(typeof(GlobalCleanupAttribute), false).Length > 0))
+            { // [GlobalCleanupAttribute]
+                x.Invoke(t, null);
+            }
+
+            // obsolete code:
+            // methods.Where(i => i.CustomAttributes.Select(j => j.AttributeType).Contains(typeof(GlobalSetupAttribute)))
+            // bool IsNullableType(Type type) => type.IsGenericType && type.GetGenericTypeDefinition().Equals(typeof(Nullable<>));
+            /* var targetType = IsNullableType(x.FieldType) ? Nullable.GetUnderlyingType(x.FieldType) : x.FieldType;
+                        if (targetType != null)
+                        {
+                            var value = Convert.ChangeType(attr[0].Values[0], targetType);
+                            x.SetValue(t, value);
+                        }*/
         }
     }
 
@@ -49,115 +112,6 @@ namespace PerformanceUpToDate
             // this.Add(BenchmarkDotNet.Jobs.Job.MediumRun.WithGcForce(true).WithId("GcForce medium"));
             // this.Add(BenchmarkDotNet.Jobs.Job.ShortRun);
             this.AddJob(BenchmarkDotNet.Jobs.Job.MediumRun);
-        }
-    }
-
-    [Config(typeof(BenchmarkConfig))]
-    public class DelegateTest
-    {
-        private uint count = 0;
-
-        private Func<uint, uint> increaseDelegate = (count) =>
-        {
-            unchecked
-            {
-                return count++;
-            }
-        };
-
-        public DelegateTest()
-        {
-        }
-
-        [Benchmark]
-        public uint Direct()
-        {
-            unchecked
-            {
-                return this.count++;
-            }
-        }
-
-        [Benchmark]
-        public uint Method()
-        {
-            return this.IncreaseMethod();
-        }
-
-        [Benchmark]
-        public uint Delegate()
-        {
-            return this.increaseDelegate(this.count);
-        }
-
-        private uint IncreaseMethod()
-        {
-            unchecked
-            {
-                return this.count++;
-            }
-        }
-    }
-
-    // [Orderer(SummaryOrderPolicy.Default,  MethodOrderPolicy.Alphabetical)]
-    [Config(typeof(BenchmarkConfig))]
-    public class MemoryAllocationTest
-    {
-        public MemoryAllocationTest()
-        {
-        }
-
-        [Params(10, 100, 256, 512, 1_000, 10_000, 100_000)]
-        public int Size { get; set; }
-
-        [Benchmark]
-        public void Allocate_New()
-        {
-            DeadCodeEliminationHelper.KeepAliveWithoutBoxing(new byte[this.Size]);
-        }
-
-        [Benchmark]
-        public void Allocate_ArrayPool()
-        {
-            var pool = ArrayPool<byte>.Shared;
-            var b = pool.Rent(this.Size);
-            pool.Return(b);
-        }
-
-        [Benchmark]
-        public byte[] AllocateWrite_New()
-        {
-            var b = new byte[this.Size];
-            for (var n = 0; n < this.Size; n++)
-            {
-                b[n] = 1;
-            }
-
-            return b;
-        }
-
-        [Benchmark]
-        public void AllocateWrite_Stackalloc()
-        {
-            Span<byte> span = stackalloc byte[this.Size];
-            for (var n = 0; n < this.Size; n++)
-            {
-                span[n] = 1;
-            }
-        }
-
-        [Benchmark]
-        public void AllocateWrite_ArrayPool()
-        {
-            var pool = ArrayPool<byte>.Shared;
-            var b = pool.Rent(this.Size);
-
-            for (var n = 0; n < this.Size; n++)
-            {
-                b[n] = 1;
-            }
-
-            pool.Return(b);
         }
     }
 }
