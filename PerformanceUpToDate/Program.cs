@@ -37,6 +37,7 @@ namespace PerformanceUpToDate
                 typeof(ByteCompareTest),
                 typeof(SpanTest),
                 typeof(StreamTest),
+                typeof(ImmutableTest),
             });
             switcher.Run(args);
         }
