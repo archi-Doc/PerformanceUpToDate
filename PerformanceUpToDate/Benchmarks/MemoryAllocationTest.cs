@@ -2,6 +2,7 @@
 
 using System;
 using System.Buffers;
+using System.Runtime.CompilerServices;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Engines;
 
@@ -50,6 +51,17 @@ namespace PerformanceUpToDate
 
         [Benchmark]
         public void AllocateWrite_Stackalloc()
+        {
+            Span<byte> span = stackalloc byte[this.Size];
+            for (var n = 0; n < this.Size; n++)
+            {
+                span[n] = 1;
+            }
+        }
+
+        [Benchmark]
+        [SkipLocalsInit]
+        public void AllocateWrite_Stackalloc2()
         {
             Span<byte> span = stackalloc byte[this.Size];
             for (var n = 0; n < this.Size; n++)
