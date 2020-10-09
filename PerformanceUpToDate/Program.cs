@@ -38,6 +38,7 @@ namespace PerformanceUpToDate
                 typeof(SpanTest),
                 typeof(StreamTest),
                 typeof(ImmutableTest),
+                typeof(StringTest),
             });
             switcher.Run(args);
         }
