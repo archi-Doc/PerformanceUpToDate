@@ -23,12 +23,13 @@ namespace PerformanceUpToDate
     {
         public static void Main(string[] args)
         {
-            DebugRun<RefTest.RefTest3>();
+            DebugRun<BitTest.NLZ>();
 
             // var summary = BenchmarkRunner.Run<ByteCopyTest>(); // SwapTest, MemoryAllocationTest, ByteCopyTest
             var switcher = new BenchmarkSwitcher(new[]
 #pragma warning restore SA1515 // Single-line comment should be preceded by blank line
             {
+                typeof(BitTest.NLZ),
                 typeof(RefTest.RefTest1),
                 typeof(RefTest.RefTest2),
                 typeof(RefTest.RefTest3),
