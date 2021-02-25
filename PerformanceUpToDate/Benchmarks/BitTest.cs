@@ -3,6 +3,7 @@
 using System;
 using System.Buffers;
 using System.IO;
+using System.Numerics;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using BenchmarkDotNet.Attributes;
@@ -19,6 +20,13 @@ namespace PerformanceUpToDate.BitTest
         [GlobalSetup]
         public void Setup()
         {
+        }
+
+        [Benchmark]
+        public int BitOperations()
+        {
+            var nlz = BitOperations.LeadingZeroCount((uint)N);
+            return nlz;
         }
 
         [Benchmark]
