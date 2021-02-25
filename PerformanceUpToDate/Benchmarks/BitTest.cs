@@ -23,7 +23,7 @@ namespace PerformanceUpToDate.BitTest
         }
 
         [Benchmark]
-        public int BitOperations()
+        public int BitOperations_LeadingZeroCount()
         {
             var nlz = BitOperations.LeadingZeroCount((uint)N);
             return nlz;
