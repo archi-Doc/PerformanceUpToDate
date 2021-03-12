@@ -8,6 +8,9 @@ using System.Runtime.InteropServices;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Engines;
 
+#pragma warning disable SA1000
+#pragma warning disable SA1307 // Accessible fields should begin with upper-case letter
+
 namespace PerformanceUpToDate.RefTest
 {
     [Config(typeof(BenchmarkConfig))]

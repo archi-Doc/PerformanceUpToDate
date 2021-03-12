@@ -29,6 +29,7 @@ namespace PerformanceUpToDate
             var switcher = new BenchmarkSwitcher(new[]
 #pragma warning restore SA1515 // Single-line comment should be preceded by blank line
             {
+                typeof(IndexOfTest),
                 typeof(BitTest.NLZ),
                 typeof(RefTest.RefTest1),
                 typeof(RefTest.RefTest2),
