@@ -21,7 +21,6 @@ namespace PerformanceUpToDate
         }
 
         [Params(100, 1_000_000)]
-        // [Params(10, 20, 32, 256, 1024, 4_000, 32_000, 1_000_000)]
         public int Size { get; set; }
 
         [GlobalSetup]
