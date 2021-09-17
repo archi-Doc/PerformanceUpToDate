@@ -14,6 +14,8 @@ Large Object Heap (LOH): 85000バイト以上のオブジェクト
 
 newより早いが、差はわずか（32Bまででnewと比較して20%早い、それ以上だと差は少なくなる）。
 
+
+
 ### ArrayPool
 
 `ArrayPool<T>.Shared.Rent`
@@ -21,6 +23,8 @@ newより早いが、差はわずか（32Bまででnewと比較して20%早い�
 共有のメモリープール。メモリー確保は固定時間。
 
 Returnする必要がある。大きいサイズ（512B 以上）の場合は、newよりパフォーマンス良い。
+
+
 
 ### new
 
@@ -38,7 +42,7 @@ good old fashioned.
 
 512B 以上：ArrayPoolの領域。パフォーマンスが重要でない場合はnewも許容される。
 
-8500B 以上：LOHを避けるため、ArrayPoolを使用する。
+85KB 以上：LOHを避けるため、ArrayPoolを使用する。
 
 
 
