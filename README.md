@@ -46,6 +46,16 @@ good old fashioned.
 
 
 
+## Atomic operations
+
+Copy: 1ns
+
+Volatile.Write: 1.5ns
+
+Interlocked.Exchange: 6ns
+
+
+
 ## IDisposable
 
 ```csharp
