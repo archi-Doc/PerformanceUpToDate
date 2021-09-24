@@ -11,154 +11,82 @@ using BenchmarkDotNet.Attributes;
 namespace PerformanceUpToDate
 {
     [Config(typeof(BenchmarkConfig))]
-    public class ByteToULongTest
+    public class FillIntArrayTest
     {
-        public byte[] ByteArray = default!;
-        public ulong[] ULongArray = default!;
+        public int[] IntArray = default!;
+        public int[] SourceArray = default!;
 
-        public ByteToULongTest()
+        public FillIntArrayTest()
         {
-            this.ByteArray = new byte[32];
-            for (var i = 0; i < this.ByteArray.Length; i++)
-            {
-                this.ByteArray[i] = (byte)i;
-            }
-
-            this.ULongArray = this.ByteToULong_BlockCopy();
-            var b = this.ULongToByte_BlockCopy();
-            Debug.Assert(b.SequenceEqual(this.ByteArray), string.Empty);
-
-            Debug.Assert(this.ULongArray.SequenceEqual(this.ByteToULong_BitConverter()), string.Empty);
-            Debug.Assert(this.ULongArray.SequenceEqual(this.ByteToULong_BitConverter2()), string.Empty);
-            Debug.Assert(this.ULongArray.SequenceEqual(this.ByteToULong_Unsafe()), string.Empty);
-            Debug.Assert(this.ULongArray.SequenceEqual(this.ByteToULong_Unsafe2()), string.Empty);
-
-            Debug.Assert(this.ByteArray.SequenceEqual(this.ULongToByte_BitConverter()), string.Empty);
-            Debug.Assert(this.ByteArray.SequenceEqual(this.ULongToByte_Unsafe2()), string.Empty);
         }
+
+        [Params(100, 1_000_000)]
+        public int Size { get; set; }
 
         [GlobalSetup]
         public void Setup()
         {
+            this.IntArray = new int[this.Size];
+            this.SourceArray = new int[16];
+            Array.Fill(this.SourceArray, -1);
         }
 
         [Benchmark]
-        public ulong[] ByteToULong_BlockCopy()
+        public int[] ForLoop()
         {
-            var d = new ulong[4];
-            Buffer.BlockCopy(this.ByteArray, 0, d, 0, 32);
-            return d;
-        }
-
-        [Benchmark]
-        public unsafe ulong[] ByteToULong_Unsafe()
-        {
-            var d = new ulong[4];
-            fixed (ulong* pd = d)
-            fixed (byte* pb = this.ByteArray)
+            for (var n = 0; n < this.IntArray.Length; n++)
             {
-                ulong* dd = pd;
-                byte* ss = pb;
-                *dd++ = ((ulong)*ss++) | ((ulong)*ss++ << 8) | ((ulong)*ss++ << 16) | ((ulong)*ss++ << 24) |
-                    ((ulong)*ss++ << 32) | ((ulong)*ss++ << 40) | ((ulong)*ss++ << 48) | ((ulong)*ss++ << 56);
-                *dd++ = ((ulong)*ss++) | ((ulong)*ss++ << 8) | ((ulong)*ss++ << 16) | ((ulong)*ss++ << 24) |
-                    ((ulong)*ss++ << 32) | ((ulong)*ss++ << 40) | ((ulong)*ss++ << 48) | ((ulong)*ss++ << 56);
-                *dd++ = ((ulong)*ss++) | ((ulong)*ss++ << 8) | ((ulong)*ss++ << 16) | ((ulong)*ss++ << 24) |
-                    ((ulong)*ss++ << 32) | ((ulong)*ss++ << 40) | ((ulong)*ss++ << 48) | ((ulong)*ss++ << 56);
-                *dd++ = ((ulong)*ss++) | ((ulong)*ss++ << 8) | ((ulong)*ss++ << 16) | ((ulong)*ss++ << 24) |
-                    ((ulong)*ss++ << 32) | ((ulong)*ss++ << 40) | ((ulong)*ss++ << 48) | ((ulong)*ss++ << 56);
+                this.IntArray[n] = -1;
             }
 
-            return d;
+            return this.IntArray;
         }
 
         [Benchmark]
-        public unsafe ulong[] ByteToULong_Unsafe2()
+        public int[] ArrayFill()
         {
-            var d = new ulong[4];
-            fixed (ulong* pd = d)
-            fixed (byte* pb = this.ByteArray)
+            Array.Fill(this.IntArray, -1);
+            return this.IntArray;
+        }
+
+        [Benchmark]
+        public int[] ArrayCopy()
+        {
+            var position = 0;
+            var block = this.SourceArray.Length;
+            while ((this.IntArray.Length - position) > block)
             {
-                ulong* dd = pd;
-                ulong* ss = (ulong*)pb;
-                *dd++ = *ss++;
-                *dd++ = *ss++;
-                *dd++ = *ss++;
-                *dd++ = *ss++;
+                Array.Copy(this.SourceArray, 0, this.IntArray, position, block);
+                position += block;
             }
 
-            return d;
-        }
-
-        [Benchmark]
-        public unsafe ulong[] ByteToULong_BitConverter()
-        {
-            var s = this.ByteArray.AsSpan();
-            var d = new ulong[4];
-            d[0] = BitConverter.ToUInt64(s);
-            s = s.Slice(8);
-            d[1] = BitConverter.ToUInt64(s);
-            s = s.Slice(8);
-            d[2] = BitConverter.ToUInt64(s);
-            s = s.Slice(8);
-            d[3] = BitConverter.ToUInt64(s);
-
-            return d;
-        }
-
-        [Benchmark]
-        public unsafe ulong[] ByteToULong_BitConverter2()
-        {
-            var d = new ulong[4];
-            d[0] = BitConverter.ToUInt64(this.ByteArray, 0);
-            d[1] = BitConverter.ToUInt64(this.ByteArray, 8);
-            d[2] = BitConverter.ToUInt64(this.ByteArray, 16);
-            d[3] = BitConverter.ToUInt64(this.ByteArray, 24);
-
-            return d;
-        }
-
-        [Benchmark]
-        public byte[] ULongToByte_BlockCopy()
-        {
-            var d = new byte[32];
-            Buffer.BlockCopy(this.ULongArray, 0, d, 0, 32);
-            return d;
-        }
-
-        [Benchmark]
-        public unsafe byte[] ULongToByte_Unsafe2()
-        {
-            var d = new byte[32];
-            fixed (byte* pd = d)
-            fixed (ulong* pb = this.ULongArray)
+            for (var n = position; n < this.IntArray.Length; n++)
             {
-                ulong* dd = (ulong*)pd;
-                ulong* ss = pb;
-                *dd++ = *ss++;
-                *dd++ = *ss++;
-                *dd++ = *ss++;
-                *dd++ = *ss++;
+                this.IntArray[n] = -1;
             }
 
-            return d;
+            return this.IntArray;
         }
 
         [Benchmark]
-        public unsafe byte[] ULongToByte_BitConverter()
+        public int[] BlockCopy()
         {
-            var d = new byte[32];
-            var s = d.AsSpan();
+            var position = 0;
+            var size = this.IntArray.Length * sizeof(int);
+            var block = this.SourceArray.Length * sizeof(int);
+            while ((size - position) > block)
+            {
+                Buffer.BlockCopy(this.SourceArray, 0, this.IntArray, position, block);
+                position += block;
+            }
 
-            BitConverter.TryWriteBytes(s, this.ULongArray[0]);
-            s = s.Slice(8);
-            BitConverter.TryWriteBytes(s, this.ULongArray[1]);
-            s = s.Slice(8);
-            BitConverter.TryWriteBytes(s, this.ULongArray[2]);
-            s = s.Slice(8);
-            BitConverter.TryWriteBytes(s, this.ULongArray[3]);
+            position /= sizeof(int);
+            for (var n = position; n < this.IntArray.Length; n++)
+            {
+                this.IntArray[n] = -1;
+            }
 
-            return d;
+            return this.IntArray;
         }
     }
 }

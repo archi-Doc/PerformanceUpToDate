@@ -1,56 +1,100 @@
 ﻿// Copyright (c) All contributors. All rights reserved. Licensed under the MIT license.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 using BenchmarkDotNet.Attributes;
 
-namespace PerformanceUpToDate
+#pragma warning disable SA1000 // Keywords should be spaced correctly
+
+namespace PerformanceUpToDate;
+
+[Config(typeof(BenchmarkConfig))]
+public class SyncDesignTest
 {
-    [Config(typeof(BenchmarkConfig))]
-    public class FillByteArrayTest
+    public object SyncObject { get; } = new();
+
+    public int X;
+
+    public ConcurrentQueue<int> Queue { get; } = new();
+
+    public ConcurrentQueue<int> Queue2 { get; } = new();
+
+    public SyncDesignTest()
     {
-        public byte[] ByteArray = default!;
+    }
 
-        public FillByteArrayTest()
+    [GlobalSetup]
+    public void Setup()
+    {
+        /*for (var i = 0; i < 100_000_000; i++)
         {
-        }
+            this.Queue2.Enqueue(i);
+        }*/
+    }
 
-        [Params(10, 100, 1_000_0)]
-        public int Size { get; set; }
-
-        [GlobalSetup]
-        public void Setup()
+    /*[Benchmark]
+    public int Lock()
+    {
+        lock (this.SyncObject)
         {
-            this.ByteArray = new byte[this.Size];
+            var x = this.X;
         }
 
-        [Benchmark]
-        public byte[] ForLoop()
-        {// Slow
-            for (var n = 0; n < this.ByteArray.Length; n++)
-            {
-                this.ByteArray[n] = 0;
-            }
+        return X;
+    }*/
 
-            return this.ByteArray;
+    /*[Benchmark]
+    public int Concurrent_EnqueueDequeue()
+    {
+        this.Queue.Enqueue(this.X);
+        if (this.Queue.TryDequeue(out var x))
+        {
+            return x;
         }
-
-        [Benchmark]
-        public byte[] ArrayFill()
-        {// Fast
-            Array.Fill<byte>(this.ByteArray, 0);
-            return this.ByteArray;
+        else
+        {
+            return 0;
         }
+    }*/
 
-        [Benchmark]
-        public byte[] SpanFill()
-        {// Fast
-            this.ByteArray.AsSpan().Fill(0);
-            return this.ByteArray;
+    [IterationSetup(Target = "Concurrent_TryDequeue2")]
+    public void SetupCuncurrent()
+    {
+        Console.WriteLine("setup");
+        this.Queue2.Clear();
+        for (var i = 0; i < 1_000_000; i++)
+        {
+            this.Queue2.Enqueue(i);
         }
     }
+
+    [Benchmark]
+    [InvocationCount(1_000_000)]
+    public int Concurrent_TryDequeue2()
+    {
+        if (this.Queue2.TryDequeue(out var x))
+        {
+            return x;
+        }
+        else
+        {
+            lock (this.SyncObject)
+            {
+                var y = this.X;
+                return y;
+            }
+        }
+    }
+
+    /*[Benchmark]
+    public int Interlocked_Increment()
+    {
+        return Interlocked.Increment(ref this.X);
+    }*/
 }
