@@ -21,6 +21,8 @@ public class SyncDesignTest
 
     public int X;
 
+    public int Y;
+
     public ConcurrentQueue<int> Queue { get; } = new();
 
     public ConcurrentQueue<int> Queue2 { get; } = new();
@@ -38,16 +40,44 @@ public class SyncDesignTest
         }*/
     }
 
-    /*[Benchmark]
+    [Benchmark]
+    public int Copy()
+    {
+        this.Y = this.X;
+        return this.Y;
+    }
+
+    [Benchmark]
     public int Lock()
     {
         lock (this.SyncObject)
         {
-            var x = this.X;
+            this.Y = this.X;
         }
 
-        return X;
-    }*/
+        return this.Y;
+    }
+
+    [Benchmark]
+    public int VolatileWrite()
+    {
+        Volatile.Write(ref this.Y, this.X);
+        return this.Y;
+    }
+
+    [Benchmark]
+    public int InterlockedIncrement()
+    {
+        var y = Interlocked.Increment(ref this.Y);
+        return y;
+    }
+
+    [Benchmark]
+    public int InterlockedExchange()
+    {
+        var y = Interlocked.Exchange(ref this.Y, this.X);
+        return y;
+    }
 
     /*[Benchmark]
     public int Concurrent_EnqueueDequeue()
@@ -91,10 +121,4 @@ public class SyncDesignTest
             }
         }
     }
-
-    /*[Benchmark]
-    public int Interlocked_Increment()
-    {
-        return Interlocked.Increment(ref this.X);
-    }*/
 }

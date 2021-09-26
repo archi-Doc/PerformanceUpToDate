@@ -72,3 +72,14 @@ using (var c = new class()) {}
 
 not working at this time.
 
+
+
+## Sync
+
+Copy: 1 ns
+Volatile.Write: 1.5 ns
+Interlocked.Exchange: 5 ns
+Interlocked.Increment: 5 ns
+lock: 16 ns
+ConcurrentQueue.TryDequeue: 10 ns (approx.)
+
