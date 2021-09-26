@@ -46,16 +46,6 @@ good old fashioned.
 
 
 
-## Atomic operations
-
-Copy: 1ns
-
-Volatile.Write: 1.5ns
-
-Interlocked.Exchange: 6ns
-
-
-
 ## IDisposable
 
 ```csharp
@@ -74,12 +64,21 @@ not working at this time.
 
 
 
-## Sync
+## Atomic operations
 
 Copy: 1 ns
+
 Volatile.Write: 1.5 ns
+
 Interlocked.Exchange: 5 ns
+
 Interlocked.Increment: 5 ns
+
 lock: 16 ns
+
 ConcurrentQueue.TryDequeue: 10 ns (approx.)
+
+ConcurrentQueue Enqueue/Dequeue: 16 ns
+
+ConcurrentStack Push/Pop: 20 ns
 

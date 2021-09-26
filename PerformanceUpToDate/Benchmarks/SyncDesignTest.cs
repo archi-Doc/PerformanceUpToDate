@@ -27,6 +27,8 @@ public class SyncDesignTest
 
     public ConcurrentQueue<int> Queue2 { get; } = new();
 
+    public ConcurrentStack<int> Stack { get; } = new();
+
     public SyncDesignTest()
     {
     }
@@ -79,7 +81,7 @@ public class SyncDesignTest
         return y;
     }
 
-    /*[Benchmark]
+    [Benchmark]
     public int Concurrent_EnqueueDequeue()
     {
         this.Queue.Enqueue(this.X);
@@ -91,7 +93,21 @@ public class SyncDesignTest
         {
             return 0;
         }
-    }*/
+    }
+
+    [Benchmark]
+    public int Concurrent_PushPop()
+    {
+        this.Stack.Push(this.X);
+        if (this.Stack.TryPop(out var x))
+        {
+            return x;
+        }
+        else
+        {
+            return 0;
+        }
+    }
 
     [IterationSetup(Target = "Concurrent_TryDequeue2")]
     public void SetupCuncurrent()
