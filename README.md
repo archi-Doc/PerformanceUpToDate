@@ -82,3 +82,11 @@ ConcurrentQueue Enqueue/Dequeue: 16 ns
 
 ConcurrentStack Push/Pop: 20 ns
 
+
+
+## Timer
+
+GetTimestamp: 11 ns
+
+TimeBegin/EndPeriod: 5.5 us
+
