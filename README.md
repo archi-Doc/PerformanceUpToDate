@@ -84,6 +84,16 @@ ConcurrentStack Push/Pop: 20 ns
 
 
 
+## ByteCopy
+
+`Array.Copy` が十分速い。
+
+256 bytes以下では `Buffer.MemoryCopy` や `UnsafeLong` が速いが、それ以上は `Array.Copy` と同等。
+
+基本的に `Array.Copy` を使う。
+
+
+
 ## Timer
 
 GetTimestamp: 11 ns
