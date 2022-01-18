@@ -100,3 +100,11 @@ GetTimestamp: 11 ns
 
 TimeBegin/EndPeriod: 5.5 us
 
+
+
+## Task
+
+`ValueTask` is slightly slower than `Task`.
+
+The win is the fact the `ValueTask` doesn't allocate anything.
+
