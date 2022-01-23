@@ -33,6 +33,34 @@ public class TaskTest
             }
         }
 
+        public async Task<int> TaskResponse3(bool sync)
+        {
+            if (sync)
+            {
+                return await TaskResponse2(sync);
+            }
+            else
+            {
+                await Task.Yield();
+                return await TaskResponse2(sync);
+            }
+        }
+
+        public async Task<int> TaskResponse3b(bool sync)
+        {
+            return TaskResponse2b(sync); // return new Task
+        }
+
+        public int TaskResponse2b(bool sync)
+        {
+            return TaskResponse(sync).Result;
+        }
+
+        public Task<int> TaskResponse3c(bool sync)
+        {
+            return Task.Run(() => TaskResponse2b(sync)); // return new Task
+        }
+
         public async Task<int> TaskResponse2(bool sync)
         {
             if (sync)
@@ -43,6 +71,19 @@ public class TaskTest
             {
                 await Task.Yield();
                 return await TaskResponse(sync);
+            }
+        }
+
+        public async Task<int> TaskWaitResponse2(bool sync)
+        {
+            if (sync)
+            {
+                return TaskResponse(sync).Result;
+            }
+            else
+            {
+                await Task.Yield();
+                return TaskResponse(sync).Result;
             }
         }
 
@@ -87,10 +128,16 @@ public class TaskTest
     {
     }
 
-    [Benchmark]
+    /*[Benchmark]
     public async Task<int> TaskWithoutAwait()
     {
         return await this.Class1.TaskResponse(true);
+    }
+
+    [Benchmark]
+    public int TaskWaitWithoutAwait()
+    {
+        return this.Class1.TaskResponse(true).Result;
     }
 
     [Benchmark]
@@ -116,17 +163,23 @@ public class TaskTest
     public async ValueTask<int> ValueTaskWithAwait()
     {
         return await this.Class1.ValueTaskResponse(false);
+    }*/
+
+    [Benchmark]
+    public async Task<int> Task3()
+    {
+        return await this.Class1.TaskResponse3(true);
     }
 
     [Benchmark]
-    public async Task<int> Task2WithoutAwait()
+    public async Task<int> Task3b()
     {
-        return await this.Class1.TaskResponse2(true);
+        return await this.Class1.TaskResponse3b(true);
     }
 
     [Benchmark]
-    public async ValueTask<int> ValueTask2WithoutAwait()
+    public async Task<int> Task3c()
     {
-        return await this.Class1.ValueTaskResponse2(true);
+        return await this.Class1.TaskResponse3c(true);
     }
 }

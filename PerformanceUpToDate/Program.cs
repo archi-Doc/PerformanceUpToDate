@@ -23,7 +23,7 @@ namespace PerformanceUpToDate
     {
         public static void Main(string[] args)
         {
-            DebugRun<AsyncLocalTest>();
+            DebugRun<TaskTest>();
 
             // var summary = BenchmarkRunner.Run<ByteCopyTest>(); // SwapTest, MemoryAllocationTest, ByteCopyTest
             var switcher = new BenchmarkSwitcher(new[]
