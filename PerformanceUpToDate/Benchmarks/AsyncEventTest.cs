@@ -20,6 +20,8 @@ public class AsyncEventTest
 
     public AsyncManualResetEvent Event2 { get; } = new();
 
+    public AsyncManualResetEvent2 Event3 { get; } = new();
+
     public AsyncEventTest()
     {
     }
@@ -29,7 +31,13 @@ public class AsyncEventTest
     {
     }
 
-    [Benchmark]
+    [GlobalCleanup]
+    public void Cleanup()
+    {
+        this.Event3.Dispose();
+    }
+
+    /*[Benchmark]
     public void ManualResetEventSlim()
     {
         Task.Run(() =>
@@ -43,7 +51,7 @@ public class AsyncEventTest
     }
 
     [Benchmark]
-    public void ManualResetEventSlim2()
+    public void ManualResetEventSlim_Spin()
     {
         Task.Run(() =>
         {
@@ -70,7 +78,7 @@ public class AsyncEventTest
     }
 
     [Benchmark]
-    public void AsyncManualResetEvent2()
+    public void AsyncManualResetEvent_Spin()
     {
         Task.Run(() =>
         {
@@ -80,6 +88,33 @@ public class AsyncEventTest
 
         this.Event2.Task.Wait();
         this.Event2.Reset();
+        return;
+    }*/
+
+    [Benchmark]
+    public void AsyncManualResetEvent2()
+    {
+        Task.Run(() =>
+        {
+            this.Event3.Set();
+        });
+
+        this.Event3.Task.Wait();
+        this.Event3.Reset();
+        return;
+    }
+
+    [Benchmark]
+    public void AsyncManualResetEvent2_Spin()
+    {
+        Task.Run(() =>
+        {
+            Thread.SpinWait(1000);
+            this.Event3.Set();
+        });
+
+        this.Event3.Task.Wait();
+        this.Event3.Reset();
         return;
     }
 }
