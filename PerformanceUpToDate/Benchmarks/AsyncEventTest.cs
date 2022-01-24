@@ -52,11 +52,11 @@ public class AsyncEventTest
     }
 
     [Benchmark]
-    public void ManualResetEventSlim_Spin()
+    public void ManualResetEventSlim_B()
     {
-        Task.Run(() =>
+        Task.Run(async () =>
         {
-            Thread.SpinWait(1000);
+            await Task.Yield();
             this.Event.Set();
         });
 
@@ -79,11 +79,11 @@ public class AsyncEventTest
     }
 
     [Benchmark]
-    public void AsyncManualResetEvent_Spin()
+    public void AsyncManualResetEvent_B()
     {
-        Task.Run(() =>
+        Task.Run(async () =>
         {
-            Thread.SpinWait(1000);
+            await Task.Yield();
             this.Event2.Set();
         });
 
@@ -106,11 +106,11 @@ public class AsyncEventTest
     }
 
     [Benchmark]
-    public void AsyncManualResetEvent2_Spin()
+    public void AsyncManualResetEvent2_B()
     {
         Task.Run(() =>
         {
-            Thread.SpinWait(1000);
+            Task.Yield();
             this.Event3.Set();
         });
 
