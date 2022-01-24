@@ -20,7 +20,7 @@ public class AsyncEventTest
 
     public AsyncManualResetEvent Event2 { get; } = new();
 
-    public AsyncManualResetEvent2 Event3 { get; } = new();
+    public AsyncManualResetEvent2 Event3 { get; private set; } = default!;
 
     public AsyncEventTest()
     {
@@ -29,6 +29,7 @@ public class AsyncEventTest
     [GlobalSetup]
     public void Setup()
     {
+        this.Event3 = new();
     }
 
     [GlobalCleanup]
@@ -37,7 +38,7 @@ public class AsyncEventTest
         this.Event3.Dispose();
     }
 
-    /*[Benchmark]
+    [Benchmark]
     public void ManualResetEventSlim()
     {
         Task.Run(() =>
@@ -89,9 +90,9 @@ public class AsyncEventTest
         this.Event2.Task.Wait();
         this.Event2.Reset();
         return;
-    }*/
+    }
 
-    [Benchmark]
+    /*[Benchmark]
     public void AsyncManualResetEvent2()
     {
         Task.Run(() =>
@@ -116,5 +117,5 @@ public class AsyncEventTest
         this.Event3.Task.Wait();
         this.Event3.Reset();
         return;
-    }
+    }*/
 }
