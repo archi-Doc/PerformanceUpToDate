@@ -64,7 +64,7 @@ namespace PerformanceUpToDate
 
         [Benchmark]
         public bool ByteCompare_SequenceEqualSpan()
-        {
+        {// Recommended
             return this.source.AsSpan().SequenceEqual(this.destination);
         }
 
