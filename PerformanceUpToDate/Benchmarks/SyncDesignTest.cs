@@ -23,6 +23,8 @@ public class SyncDesignTest
 
     public int Y;
 
+    public volatile int V;
+
     public ConcurrentQueue<int> Queue { get; } = new();
 
     public ConcurrentQueue<int> Queue2 { get; } = new();
@@ -68,6 +70,20 @@ public class SyncDesignTest
     }
 
     [Benchmark]
+    public int RawIncrement()
+    {
+        this.X++;
+        return this.X;
+    }
+
+    [Benchmark]
+    public int VolatileIncrement()
+    {
+        this.V++;
+        return this.V;
+    }
+
+    [Benchmark]
     public int InterlockedIncrement()
     {
         var y = Interlocked.Increment(ref this.Y);
@@ -81,7 +97,7 @@ public class SyncDesignTest
         return y;
     }
 
-    [Benchmark]
+    /*[Benchmark]
     public int Concurrent_EnqueueDequeue()
     {
         this.Queue.Enqueue(this.X);
@@ -136,5 +152,5 @@ public class SyncDesignTest
                 return y;
             }
         }
-    }
+    }*/
 }
