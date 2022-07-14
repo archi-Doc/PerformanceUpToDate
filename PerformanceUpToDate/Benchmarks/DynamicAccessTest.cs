@@ -21,6 +21,8 @@ public class DynamicAccessTest
     public class Class
     {
         public int Id { get; private set; }
+
+        public int Id2;
     }
 
     public Class ClassInstance { get; set; } = new();
@@ -29,6 +31,7 @@ public class DynamicAccessTest
     private Action<Class, int> setMethodExpressionTreeFast;
     private Action<Class, int> setMethodDelegate;
     private MethodInfo setMethodInfo;
+    private FieldInfo fieldInfo;
 
     public DynamicAccessTest()
     {
@@ -36,12 +39,14 @@ public class DynamicAccessTest
         this.setMethodExpressionTreeFast = this.CreateExpressionTreeFast();
         this.setMethodDelegate = this.CreateDelegate();
         this.setMethodInfo = this.CreateMethodInfo();
+        this.fieldInfo = this.CreateFieldInfo();
 
         var c = new Class();
         this.setMethodExpressionTree(c, 1);
         this.setMethodExpressionTreeFast(c, 2);
         this.setMethodDelegate(c, 3);
         this.setMethodInfo.Invoke(c, new object[] { 4, });
+        this.fieldInfo.SetValue(c, 3);
     }
 
     [GlobalSetup]
@@ -94,6 +99,12 @@ public class DynamicAccessTest
     }
 
     [Benchmark]
+    public FieldInfo CreateFieldInfo()
+    {
+        return typeof(Class).GetField("Id2");
+    }
+
+    [Benchmark]
     public Class SetExpressionTree()
     {
         this.setMethodExpressionTree(this.ClassInstance, 1);
@@ -118,6 +129,13 @@ public class DynamicAccessTest
     public Class SetInvoke()
     {
         this.setMethodInfo.Invoke(this.ClassInstance, new object[] { 1, });
+        return this.ClassInstance;
+    }
+
+    [Benchmark]
+    public Class SetField()
+    {
+        this.fieldInfo.SetValue(this.ClassInstance, 4);
         return this.ClassInstance;
     }
 }
