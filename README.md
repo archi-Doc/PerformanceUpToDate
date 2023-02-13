@@ -108,3 +108,16 @@ TimeBegin/EndPeriod: 5.5 us
 
 The win is the fact the `ValueTask` doesn't allocate anything.
 
+
+
+## Mutual exclusion
+Create object: 2ns, 24B
+Create Semaphore: 490ns
+Create SemaphoreSlim: 7ns, 88B
+
+Lock: 14ns
+Monitor Enter/Exit: 15ns
+Semaphore Wait/Release: 367ns
+SemaphoreSlim Wait/Release: 32ns
+SemaphoreSlim WaitAsync/Release: 43ns
+
