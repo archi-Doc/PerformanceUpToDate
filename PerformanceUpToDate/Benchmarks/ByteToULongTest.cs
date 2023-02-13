@@ -55,18 +55,20 @@ namespace PerformanceUpToDate
         {
             var d = new ulong[4];
             fixed (ulong* pd = d)
-            fixed (byte* pb = this.ByteArray)
             {
-                ulong* dd = pd;
-                byte* ss = pb;
-                *dd++ = ((ulong)*ss++) | ((ulong)*ss++ << 8) | ((ulong)*ss++ << 16) | ((ulong)*ss++ << 24) |
-                    ((ulong)*ss++ << 32) | ((ulong)*ss++ << 40) | ((ulong)*ss++ << 48) | ((ulong)*ss++ << 56);
-                *dd++ = ((ulong)*ss++) | ((ulong)*ss++ << 8) | ((ulong)*ss++ << 16) | ((ulong)*ss++ << 24) |
-                    ((ulong)*ss++ << 32) | ((ulong)*ss++ << 40) | ((ulong)*ss++ << 48) | ((ulong)*ss++ << 56);
-                *dd++ = ((ulong)*ss++) | ((ulong)*ss++ << 8) | ((ulong)*ss++ << 16) | ((ulong)*ss++ << 24) |
-                    ((ulong)*ss++ << 32) | ((ulong)*ss++ << 40) | ((ulong)*ss++ << 48) | ((ulong)*ss++ << 56);
-                *dd++ = ((ulong)*ss++) | ((ulong)*ss++ << 8) | ((ulong)*ss++ << 16) | ((ulong)*ss++ << 24) |
-                    ((ulong)*ss++ << 32) | ((ulong)*ss++ << 40) | ((ulong)*ss++ << 48) | ((ulong)*ss++ << 56);
+                fixed (byte* pb = this.ByteArray)
+                {
+                    ulong* dd = pd;
+                    byte* ss = pb;
+                    *dd++ = ((ulong)*ss++) | ((ulong)*ss++ << 8) | ((ulong)*ss++ << 16) | ((ulong)*ss++ << 24) |
+                        ((ulong)*ss++ << 32) | ((ulong)*ss++ << 40) | ((ulong)*ss++ << 48) | ((ulong)*ss++ << 56);
+                    *dd++ = ((ulong)*ss++) | ((ulong)*ss++ << 8) | ((ulong)*ss++ << 16) | ((ulong)*ss++ << 24) |
+                        ((ulong)*ss++ << 32) | ((ulong)*ss++ << 40) | ((ulong)*ss++ << 48) | ((ulong)*ss++ << 56);
+                    *dd++ = ((ulong)*ss++) | ((ulong)*ss++ << 8) | ((ulong)*ss++ << 16) | ((ulong)*ss++ << 24) |
+                        ((ulong)*ss++ << 32) | ((ulong)*ss++ << 40) | ((ulong)*ss++ << 48) | ((ulong)*ss++ << 56);
+                    *dd++ = ((ulong)*ss++) | ((ulong)*ss++ << 8) | ((ulong)*ss++ << 16) | ((ulong)*ss++ << 24) |
+                        ((ulong)*ss++ << 32) | ((ulong)*ss++ << 40) | ((ulong)*ss++ << 48) | ((ulong)*ss++ << 56);
+                }
             }
 
             return d;
@@ -77,14 +79,16 @@ namespace PerformanceUpToDate
         {
             var d = new ulong[4];
             fixed (ulong* pd = d)
-            fixed (byte* pb = this.ByteArray)
             {
-                ulong* dd = pd;
-                ulong* ss = (ulong*)pb;
-                *dd++ = *ss++;
-                *dd++ = *ss++;
-                *dd++ = *ss++;
-                *dd++ = *ss++;
+                fixed (byte* pb = this.ByteArray)
+                {
+                    ulong* dd = pd;
+                    ulong* ss = (ulong*)pb;
+                    *dd++ = *ss++;
+                    *dd++ = *ss++;
+                    *dd++ = *ss++;
+                    *dd++ = *ss++;
+                }
             }
 
             return d;
@@ -131,14 +135,16 @@ namespace PerformanceUpToDate
         {
             var d = new byte[32];
             fixed (byte* pd = d)
-            fixed (ulong* pb = this.ULongArray)
             {
-                ulong* dd = (ulong*)pd;
-                ulong* ss = pb;
-                *dd++ = *ss++;
-                *dd++ = *ss++;
-                *dd++ = *ss++;
-                *dd++ = *ss++;
+                fixed (ulong* pb = this.ULongArray)
+                {
+                    ulong* dd = (ulong*)pd;
+                    ulong* ss = pb;
+                    *dd++ = *ss++;
+                    *dd++ = *ss++;
+                    *dd++ = *ss++;
+                    *dd++ = *ss++;
+                }
             }
 
             return d;

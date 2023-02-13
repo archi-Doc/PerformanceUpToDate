@@ -37,40 +37,40 @@ public class TaskTest
         {
             if (sync)
             {
-                return await TaskResponse2(sync);
+                return await this.TaskResponse2(sync);
             }
             else
             {
                 await Task.Yield();
-                return await TaskResponse2(sync);
+                return await this.TaskResponse2(sync);
             }
         }
 
         public async Task<int> TaskResponse3b(bool sync)
         {
-            return TaskResponse2b(sync); // return new Task
+            return this.TaskResponse2b(sync); // return new Task
         }
 
         public int TaskResponse2b(bool sync)
         {
-            return TaskResponse(sync).Result;
+            return this.TaskResponse(sync).Result;
         }
 
         public Task<int> TaskResponse3c(bool sync)
         {
-            return Task.Run(() => TaskResponse2b(sync)); // return new Task
+            return Task.Run(() => this.TaskResponse2b(sync)); // return new Task
         }
 
         public async Task<int> TaskResponse2(bool sync)
         {
             if (sync)
             {
-                return await TaskResponse(sync);
+                return await this.TaskResponse(sync);
             }
             else
             {
                 await Task.Yield();
-                return await TaskResponse(sync);
+                return await this.TaskResponse(sync);
             }
         }
 
@@ -78,12 +78,12 @@ public class TaskTest
         {
             if (sync)
             {
-                return TaskResponse(sync).Result;
+                return this.TaskResponse(sync).Result;
             }
             else
             {
                 await Task.Yield();
-                return TaskResponse(sync).Result;
+                return this.TaskResponse(sync).Result;
             }
         }
 
@@ -104,12 +104,12 @@ public class TaskTest
         {
             if (sync)
             {
-                return await ValueTaskResponse(sync);
+                return await this.ValueTaskResponse(sync);
             }
             else
             {
                 await Task.Yield();
-                return await ValueTaskResponse(sync);
+                return await this.ValueTaskResponse(sync);
             }
         }
 

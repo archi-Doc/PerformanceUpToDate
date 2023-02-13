@@ -25,7 +25,7 @@ namespace PerformanceUpToDate.BitTest
         [Benchmark]
         public int BitOperations_LeadingZeroCount()
         {
-            var nlz = BitOperations.LeadingZeroCount((uint)N);
+            var nlz = BitOperations.LeadingZeroCount((uint)this.N);
             return nlz;
         }
 
@@ -33,7 +33,7 @@ namespace PerformanceUpToDate.BitTest
         public int Log2()
         {
             int result = 0;
-            var value = N;
+            var value = this.N;
 
             while (value > 0)
             {
@@ -50,7 +50,7 @@ namespace PerformanceUpToDate.BitTest
         {
             int x, y, m, n;
 
-            x = N;
+            x = this.N;
             y = -(x >> 16);
             m = (y >> 16) & 16;
             n = 16 - m;
@@ -84,7 +84,7 @@ namespace PerformanceUpToDate.BitTest
             int x, y;
             int n, nlz;
 
-            x = N;
+            x = this.N;
             n = 32;
 
             y = x >> 16;
@@ -142,7 +142,7 @@ namespace PerformanceUpToDate.BitTest
         public int Union()
         {
             var union = default(LongDoubleUnion);
-            union.Double = (double)N + 0.5;
+            union.Double = (double)this.N + 0.5;
             var nlz = (int)(1054 - (union.Long >> 52));
             return nlz;
         }
