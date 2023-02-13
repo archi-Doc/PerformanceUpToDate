@@ -14,7 +14,7 @@ public class LockTest
     private object syncObject = new();
     private Semaphore semaphore = new(1, 1);
     private SemaphoreSlim semaphoreSlim = new(1, 1);
-    private AsyncMonitor asyncMonitor = new();
+    private SemaphoreLock semaphoreLock = new();
 
     public LockTest()
     {
@@ -38,7 +38,7 @@ public class LockTest
         => new(1, 1);
 
     [Benchmark]
-    public AsyncMonitor CreateAsyncMonitor()
+    public SemaphoreLock CreateSemaphoreLock()
         => new();
 
     [Benchmark]
@@ -67,18 +67,18 @@ public class LockTest
     }
 
     [Benchmark]
-    public void AsyncMonitorEnterExit()
+    public void SemaphoreLockEnterExit()
     {
         var lockTaken = false;
         try
         {
-            lockTaken = this.asyncMonitor.Enter();
+            lockTaken = this.semaphoreLock.Enter();
         }
         finally
         {
             if (lockTaken)
             {
-                this.asyncMonitor.Exit();
+                this.semaphoreLock.Exit();
             }
         }
     }
