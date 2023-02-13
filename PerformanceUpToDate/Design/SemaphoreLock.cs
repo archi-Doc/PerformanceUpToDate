@@ -9,6 +9,7 @@ public class SemaphoreLock
     private readonly object syncObject;
     private volatile bool entered = false;
     private int waitCount;
+    private int countOfWaitersPulsedToWake;
     private TaskNode? head;
     private TaskNode? tail;
 
@@ -53,6 +54,10 @@ public class SemaphoreLock
                 while (this.entered)
                 {
                     Monitor.Wait(this.syncObject);
+                    if (this.countOfWaitersPulsedToWake != 0)
+                    {
+                        this.countOfWaitersPulsedToWake--;
+                    }
                 }
 
                 this.entered = true;
@@ -82,10 +87,8 @@ public class SemaphoreLock
             }
             else
             {
-                // Create the task
                 var node = new TaskNode();
 
-                // Add it to the linked list
                 if (this.head == null)
                 {
                     this.head = node;
@@ -112,19 +115,23 @@ public class SemaphoreLock
                 throw new InvalidOperationException();
             }
 
-            if (this.waitCount > 0)
+            var waitersToNotify = Math.Min(1, this.waitCount) - this.countOfWaitersPulsedToWake;
+            if (waitersToNotify == 1)
             {
+                this.countOfWaitersPulsedToWake += 1;
                 Monitor.Pulse(this.syncObject);
             }
 
-            if (this.head is not null)
+            if (this.head is not null && this.waitCount == 0)
             {
                 var waiterTask = this.head;
                 this.RemoveAsyncWaiter(waiterTask);
                 waiterTask.TrySetResult(result: true);
             }
-
-            this.entered = false;
+            else
+            {
+                this.entered = false;
+            }
         }
     }
 
