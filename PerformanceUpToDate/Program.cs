@@ -47,6 +47,7 @@ public class Program
             typeof(RefTest.RefTest2),
             typeof(RefTest.RefTest3),
             typeof(NewInstance.NewInstanceTest),
+            typeof(NewInstance2.NewInstanceTest2),
             typeof(StructTest),
             typeof(DelegateTest),
             typeof(MemoryAllocationTest),
