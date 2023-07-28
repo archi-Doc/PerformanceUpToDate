@@ -15,20 +15,20 @@ using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Order;
 using BenchmarkDotNet.Running;
 
-#pragma warning disable SA1515 // Single-line comment should be preceded by blank line
-
 namespace PerformanceUpToDate;
 
 public class Program
 {
     public static void Main(string[] args)
     {
-        DebugRun<EnumTest>();
+        DebugRun<TaskTest2>();
 
         // var summary = BenchmarkRunner.Run<ByteCopyTest>(); // SwapTest, MemoryAllocationTest, ByteCopyTest
         var switcher = new BenchmarkSwitcher(new[]
 #pragma warning restore SA1515 // Single-line comment should be preceded by blank line
         {
+            typeof(TaskTest3),
+            typeof(TaskTest2),
             typeof(EnumTest),
             typeof(LockTest),
             typeof(DynamicAccessTest),
