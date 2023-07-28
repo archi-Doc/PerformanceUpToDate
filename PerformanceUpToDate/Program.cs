@@ -30,6 +30,7 @@ public class Program
             typeof(TaskTest3),
             typeof(TaskTest2),
             typeof(EnumTest),
+            typeof(ConcurrentTest),
             typeof(LockTest),
             typeof(DynamicAccessTest),
             typeof(AsyncEventTest),

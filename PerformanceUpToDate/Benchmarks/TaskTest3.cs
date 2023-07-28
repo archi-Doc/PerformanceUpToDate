@@ -20,14 +20,23 @@ public class TaskTest3
         public async Task<bool> TaskTrue2()
             => await this.TaskTrue();
 
+        public Task<bool> TaskTrueB()
+            => this.TaskTrue();
+
         public async ValueTask<bool> ValueTaskTrue2()
             => await this.ValueTaskTrue();
 
         public async Task<bool> TaskBool2(bool value)
             => await this.TaskBool(value);
 
+        public Task<bool> TaskBoolB(bool value)
+            => this.TaskBool(value);
+
         public async ValueTask<bool> ValueTaskBool2(bool value)
             => await this.ValueTaskBool(value);
+
+        public Task<int> Task1_B()
+            => this.Task1();
 
         public async Task<int> Task1_2()
             => await this.Task1() + 100;
@@ -38,11 +47,17 @@ public class TaskTest3
         public async Task<int> Task20_2()
             => await this.Task20() + 100;
 
+        public Task<int> Task20_B()
+            => this.Task20();
+
         public async ValueTask<int> ValueTask20_2()
             => await this.ValueTask20() + 100;
 
         public async Task<int> TaskInt2(int value)
             => await this.TaskInt(value) + 100;
+
+        public Task<int> TaskIntB(int value)
+            => this.TaskInt(value + 100);
 
         public async ValueTask<int> ValueTaskInt2(int value)
             => await this.ValueTaskInt(value) + 100;
@@ -120,12 +135,20 @@ public class TaskTest3
         => await this.Class1.TaskTrue2();
 
     [Benchmark]
+    public async Task<bool> TaskTrueB()
+        => await this.Class1.TaskTrueB();
+
+    [Benchmark]
     public async ValueTask<bool> ValueTaskTrue2()
         => await this.Class1.ValueTaskTrue2();
 
     [Benchmark]
     public async Task<bool> TaskBool2()
         => await this.Class1.TaskBool2(true);
+
+    [Benchmark]
+    public async Task<bool> TaskBoolB()
+        => await this.Class1.TaskBoolB(true);
 
     [Benchmark]
     public async ValueTask<bool> ValueTaskBool2()
@@ -136,6 +159,10 @@ public class TaskTest3
         => await this.Class1.Task1_2();
 
     [Benchmark]
+    public async Task<int> Task1_B()
+        => await this.Class1.Task1_B();
+
+    [Benchmark]
     public async ValueTask<int> ValueTask1_2()
         => await this.Class1.ValueTask1_2();
 
@@ -144,12 +171,20 @@ public class TaskTest3
         => await this.Class1.Task20_2();
 
     [Benchmark]
+    public async Task<int> Task20_B()
+        => await this.Class1.Task20_B();
+
+    [Benchmark]
     public async ValueTask<int> ValueTask20_2()
         => await this.Class1.ValueTask20_2();
 
     [Benchmark]
     public async Task<int> TaskInt2()
         => await this.Class1.TaskInt2(this.x);
+
+    [Benchmark]
+    public async Task<int> TaskIntB()
+        => await this.Class1.TaskIntB(this.x);
 
     [Benchmark]
     public async ValueTask<int> ValueTaskInt2()
