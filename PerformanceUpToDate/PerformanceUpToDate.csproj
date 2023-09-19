@@ -23,7 +23,7 @@
 
   <ItemGroup>
     <PackageReference Include="Arc.Collections" Version="1.7.0" />
-    <PackageReference Include="BenchmarkDotNet" Version="0.13.6" />
+    <PackageReference Include="BenchmarkDotNet" Version="0.13.8" />
     <PackageReference Include="FastExpressionCompiler" Version="3.3.4" />
     <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.507">
       <PrivateAssets>all</PrivateAssets>
