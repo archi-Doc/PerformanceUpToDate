@@ -9,142 +9,141 @@ using System.Runtime.InteropServices;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Engines;
 
-namespace PerformanceUpToDate.BitTest
+namespace PerformanceUpToDate.BitTest;
+
+[Config(typeof(BenchmarkConfig))]
+public class NLZ
 {
-    [Config(typeof(BenchmarkConfig))]
-    public class NLZ
+    [Params(10, 1000, 1000_000)]
+    public int N { get; set; }
+
+    [GlobalSetup]
+    public void Setup()
     {
-        [Params(10, 1000, 1000_000)]
-        public int N { get; set; }
+    }
 
-        [GlobalSetup]
-        public void Setup()
+    [Benchmark]
+    public int BitOperations_LeadingZeroCount()
+    {
+        var nlz = BitOperations.LeadingZeroCount((uint)this.N);
+        return nlz;
+    }
+
+    [Benchmark]
+    public int Log2()
+    {
+        int result = 0;
+        var value = this.N;
+
+        while (value > 0)
         {
+            result++;
+            value >>= 1;
         }
 
-        [Benchmark]
-        public int BitOperations_LeadingZeroCount()
+        var nlz = 32 - result;
+        return nlz;
+    }
+
+    [Benchmark]
+    public int NoBranch()
+    {
+        int x, y, m, n;
+
+        x = this.N;
+        y = -(x >> 16);
+        m = (y >> 16) & 16;
+        n = 16 - m;
+        x = x >> m;
+
+        y = x - 0x100;
+        m = (y >> 16) & 8;
+        n = n + m;
+        x = x << m;
+
+        y = x - 0x1000;
+        m = (y >> 16) & 4;
+        n = n + m;
+        x = x << m;
+
+        y = x - 0x4000;
+        m = (y >> 16) & 2;
+        n = n + m;
+        x = x << m;
+
+        y = x >> 14;
+        m = y & ~(y >> 1);
+
+        var nlz = n + 2 - m;
+        return nlz;
+    }
+
+    [Benchmark]
+    public int Branch()
+    {
+        int x, y;
+        int n, nlz;
+
+        x = this.N;
+        n = 32;
+
+        y = x >> 16;
+        if (y != 0)
         {
-            var nlz = BitOperations.LeadingZeroCount((uint)this.N);
-            return nlz;
+            n = n - 16;
+            x = y;
         }
 
-        [Benchmark]
-        public int Log2()
+        y = x >> 8;
+        if (y != 0)
         {
-            int result = 0;
-            var value = this.N;
-
-            while (value > 0)
-            {
-                result++;
-                value >>= 1;
-            }
-
-            var nlz = 32 - result;
-            return nlz;
+            n = n - 8;
+            x = y;
         }
 
-        [Benchmark]
-        public int NoBranch()
+        y = x >> 4;
+        if (y != 0)
         {
-            int x, y, m, n;
-
-            x = this.N;
-            y = -(x >> 16);
-            m = (y >> 16) & 16;
-            n = 16 - m;
-            x = x >> m;
-
-            y = x - 0x100;
-            m = (y >> 16) & 8;
-            n = n + m;
-            x = x << m;
-
-            y = x - 0x1000;
-            m = (y >> 16) & 4;
-            n = n + m;
-            x = x << m;
-
-            y = x - 0x4000;
-            m = (y >> 16) & 2;
-            n = n + m;
-            x = x << m;
-
-            y = x >> 14;
-            m = y & ~(y >> 1);
-
-            var nlz = n + 2 - m;
-            return nlz;
+            n = n - 4;
+            x = y;
         }
 
-        [Benchmark]
-        public int Branch()
+        y = x >> 2;
+        if (y != 0)
         {
-            int x, y;
-            int n, nlz;
-
-            x = this.N;
-            n = 32;
-
-            y = x >> 16;
-            if (y != 0)
-            {
-                n = n - 16;
-                x = y;
-            }
-
-            y = x >> 8;
-            if (y != 0)
-            {
-                n = n - 8;
-                x = y;
-            }
-
-            y = x >> 4;
-            if (y != 0)
-            {
-                n = n - 4;
-                x = y;
-            }
-
-            y = x >> 2;
-            if (y != 0)
-            {
-                n = n - 2;
-                x = y;
-            }
-
-            y = x >> 1;
-            if (y != 0)
-            {
-                nlz = n - 2;
-            }
-            else
-            {
-                nlz = n - x;
-            }
-
-            return nlz;
+            n = n - 2;
+            x = y;
         }
 
-        [StructLayout(LayoutKind.Explicit)]
-        internal struct LongDoubleUnion
+        y = x >> 1;
+        if (y != 0)
         {
-            [FieldOffset(0)]
-            internal long Long;
-
-            [FieldOffset(0)]
-            internal double Double;
+            nlz = n - 2;
+        }
+        else
+        {
+            nlz = n - x;
         }
 
-        [Benchmark]
-        public int Union()
-        {
-            var union = default(LongDoubleUnion);
-            union.Double = (double)this.N + 0.5;
-            var nlz = (int)(1054 - (union.Long >> 52));
-            return nlz;
-        }
+        return nlz;
+    }
+
+    [StructLayout(LayoutKind.Explicit)]
+    internal struct LongDoubleUnion
+    {
+        [FieldOffset(0)]
+        internal long Long;
+
+        [FieldOffset(0)]
+        internal double Double;
+    }
+
+    [Benchmark]
+    public int Union()
+    {
+        var union = default(LongDoubleUnion);
+        union.Double = (double)this.N + 0.5;
+        var nlz = (int)(1054 - (union.Long >> 52));
+        return nlz;
     }
 }

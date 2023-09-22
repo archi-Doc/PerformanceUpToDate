@@ -8,43 +8,42 @@ using BenchmarkDotNet.Attributes;
 #pragma warning disable SA1401 // Fields should be private
 #pragma warning disable SA1307
 
-namespace PerformanceUpToDate.Obsolete
+namespace PerformanceUpToDate.Obsolete;
+
+[Config(typeof(BenchmarkConfig))]
+public class SwapTest
 {
-    [Config(typeof(BenchmarkConfig))]
-    public class SwapTest
+    private SwapClass swap;
+
+    public SwapTest()
     {
-        private SwapClass swap;
+        this.swap = new SwapClass();
+    }
 
-        public SwapTest()
-        {
-            this.swap = new SwapClass();
-        }
+    [Benchmark]
+    public SwapClass Swap_Temp()
+    {
+        int temp;
 
-        [Benchmark]
-        public SwapClass Swap_Temp()
-        {
-            int temp;
+        temp = this.swap.a;
+        this.swap.a = this.swap.b;
+        this.swap.b = temp;
 
-            temp = this.swap.a;
-            this.swap.a = this.swap.b;
-            this.swap.b = temp;
+        return this.swap;
+    }
 
-            return this.swap;
-        }
+    [Benchmark]
+    public SwapClass Swap_Tuple()
+    {
+        (this.swap.a, this.swap.b) = (this.swap.b, this.swap.a);
 
-        [Benchmark]
-        public SwapClass Swap_Tuple()
-        {
-            (this.swap.a, this.swap.b) = (this.swap.b, this.swap.a);
+        return this.swap;
+    }
 
-            return this.swap;
-        }
-
-        public class SwapClass
-        {
-            public int a = 0;
-            public int b = 1;
-            public int c = 2;
-        }
+    public class SwapClass
+    {
+        public int a = 0;
+        public int b = 1;
+        public int c = 2;
     }
 }

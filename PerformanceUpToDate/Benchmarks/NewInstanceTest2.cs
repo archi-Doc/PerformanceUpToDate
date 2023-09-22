@@ -7,72 +7,71 @@ using BenchmarkDotNet.Attributes;
 
 #pragma warning disable SA1649 // File name should match first type name
 
-namespace PerformanceUpToDate.NewInstance2
+namespace PerformanceUpToDate.NewInstance2;
+
+public class SimpleNewClass
 {
-    public class SimpleNewClass
+    public SimpleNewClass()
     {
-        public SimpleNewClass()
-        {
-        }
-
-        public int X { get; set; } = 49;
-
-        public string Text { get; set; } = "Test";
     }
 
-    public class NewConstraintClass : INewClass
+    public int X { get; set; } = 49;
+
+    public string Text { get; set; } = "Test";
+}
+
+public class NewConstraintClass : INewClass
+{
+    public NewConstraintClass()
     {
-        public NewConstraintClass()
-        {
-        }
-
-        public int X { get; set; } = 49;
-
-        public string Text { get; set; } = "Test";
-
-        public static INewClass New() => new NewConstraintClass();
     }
 
-    public interface INewClass
+    public int X { get; set; } = 49;
+
+    public string Text { get; set; } = "Test";
+
+    public static INewClass New() => new NewConstraintClass();
+}
+
+public interface INewClass
+{
+    static abstract INewClass New();
+}
+
+[Config(typeof(BenchmarkConfig))]
+public class NewInstanceTest2
+{
+    [GlobalSetup]
+    public void Setup()
     {
-        static abstract INewClass New();
     }
 
-    [Config(typeof(BenchmarkConfig))]
-    public class NewInstanceTest2
+    [Benchmark]
+    public SimpleNewClass SimpleNew()
+        => new SimpleNewClass();
+
+    [Benchmark]
+    public SimpleNewClass ActivatorCreate()
+        => Activator.CreateInstance<SimpleNewClass>();
+
+    [Benchmark]
+    public NewConstraintClass NewConstraint()
+        => this.NewConstraintInternal<NewConstraintClass>();
+
+    [Benchmark]
+    public NewConstraintClass StaticAbstract()
+        => this.StaticAbstractInternal<NewConstraintClass>();
+
+    private T NewConstraintInternal<T>()
+        where T : new()
     {
-        [GlobalSetup]
-        public void Setup()
-        {
-        }
+        return new T();
+    }
 
-        [Benchmark]
-        public SimpleNewClass SimpleNew()
-            => new SimpleNewClass();
-
-        [Benchmark]
-        public SimpleNewClass ActivatorCreate()
-            => Activator.CreateInstance<SimpleNewClass>();
-
-        [Benchmark]
-        public NewConstraintClass NewConstraint()
-            => this.NewConstraintInternal<NewConstraintClass>();
-
-        [Benchmark]
-        public NewConstraintClass StaticAbstract()
-            => this.StaticAbstractInternal<NewConstraintClass>();
-
-        private T NewConstraintInternal<T>()
-            where T : new()
-        {
-            return new T();
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private T StaticAbstractInternal<T>()
-            where T : INewClass
-        {
-            return (T)T.New();
-        }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private T StaticAbstractInternal<T>()
+        where T : INewClass
+    {
+        return (T)T.New();
     }
 }

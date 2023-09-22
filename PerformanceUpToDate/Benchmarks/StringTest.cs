@@ -13,33 +13,32 @@ using BenchmarkDotNet.Engines;
 #pragma warning disable SA1307 // Accessible fields should begin with upper-case letter
 #pragma warning disable SA1401 // Fields should be private
 
-namespace PerformanceUpToDate
+namespace PerformanceUpToDate;
+
+[Config(typeof(BenchmarkConfig))]
+public class StringTest
 {
-    [Config(typeof(BenchmarkConfig))]
-    public class StringTest
+    public string TestString = default!;
+    public string AppendString = default!;
+    public char AppendChar;
+
+    [GlobalSetup]
+    public void Setup()
     {
-        public string TestString = default!;
-        public string AppendString = default!;
-        public char AppendChar;
+        this.TestString = "test";
+        this.AppendString = "1";
+        this.AppendChar = '1';
+    }
 
-        [GlobalSetup]
-        public void Setup()
-        {
-            this.TestString = "test";
-            this.AppendString = "1";
-            this.AppendChar = '1';
-        }
+    [Benchmark]
+    public string Append()
+    {
+        return this.TestString + this.AppendString;
+    }
 
-        [Benchmark]
-        public string Append()
-        {
-            return this.TestString + this.AppendString;
-        }
-
-        [Benchmark]
-        public string Append2()
-        {
-            return this.TestString + this.AppendChar;
-        }
+    [Benchmark]
+    public string Append2()
+    {
+        return this.TestString + this.AppendChar;
     }
 }

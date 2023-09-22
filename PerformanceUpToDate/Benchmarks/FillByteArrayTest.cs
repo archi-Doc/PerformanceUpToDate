@@ -8,49 +8,48 @@ using System.Runtime.InteropServices;
 using System.Text;
 using BenchmarkDotNet.Attributes;
 
-namespace PerformanceUpToDate
+namespace PerformanceUpToDate;
+
+[Config(typeof(BenchmarkConfig))]
+public class FillByteArrayTest
 {
-    [Config(typeof(BenchmarkConfig))]
-    public class FillByteArrayTest
+    public byte[] ByteArray = default!;
+
+    public FillByteArrayTest()
     {
-        public byte[] ByteArray = default!;
+    }
 
-        public FillByteArrayTest()
+    [Params(10, 100, 1_000_0)]
+    public int Size { get; set; }
+
+    [GlobalSetup]
+    public void Setup()
+    {
+        this.ByteArray = new byte[this.Size];
+    }
+
+    [Benchmark]
+    public byte[] ForLoop()
+    {// Slow
+        for (var n = 0; n < this.ByteArray.Length; n++)
         {
+            this.ByteArray[n] = 0;
         }
 
-        [Params(10, 100, 1_000_0)]
-        public int Size { get; set; }
+        return this.ByteArray;
+    }
 
-        [GlobalSetup]
-        public void Setup()
-        {
-            this.ByteArray = new byte[this.Size];
-        }
+    [Benchmark]
+    public byte[] ArrayFill()
+    {// Fast
+        Array.Fill<byte>(this.ByteArray, 0);
+        return this.ByteArray;
+    }
 
-        [Benchmark]
-        public byte[] ForLoop()
-        {// Slow
-            for (var n = 0; n < this.ByteArray.Length; n++)
-            {
-                this.ByteArray[n] = 0;
-            }
-
-            return this.ByteArray;
-        }
-
-        [Benchmark]
-        public byte[] ArrayFill()
-        {// Fast
-            Array.Fill<byte>(this.ByteArray, 0);
-            return this.ByteArray;
-        }
-
-        [Benchmark]
-        public byte[] SpanFill()
-        {// Fast
-            this.ByteArray.AsSpan().Fill(0);
-            return this.ByteArray;
-        }
+    [Benchmark]
+    public byte[] SpanFill()
+    {// Fast
+        this.ByteArray.AsSpan().Fill(0);
+        return this.ByteArray;
     }
 }

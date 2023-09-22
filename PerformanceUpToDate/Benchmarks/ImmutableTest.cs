@@ -11,43 +11,42 @@ using BenchmarkDotNet.Attributes;
 #pragma warning disable SA1307 // Accessible fields should begin with upper-case letter
 #pragma warning disable SA1401 // Fields should be private
 
-namespace PerformanceUpToDate
+namespace PerformanceUpToDate;
+
+[Config(typeof(BenchmarkConfig))]
+public class ImmutableTest
 {
-    [Config(typeof(BenchmarkConfig))]
-    public class ImmutableTest
+    [Params(10, 100, 1_000)]
+    public int Size { get; set; }
+
+    [GlobalSetup]
+    public void Setup()
     {
-        [Params(10, 100, 1_000)]
-        public int Size { get; set; }
+    }
 
-        [GlobalSetup]
-        public void Setup()
+    [Benchmark]
+    public int[] ArrayTest()
+    {
+        var array = new int[this.Size];
+
+        for (var n = 0; n < this.Size; n++)
         {
+            array[n] = n;
         }
 
-        [Benchmark]
-        public int[] ArrayTest()
+        return array;
+    }
+
+    [Benchmark]
+    public ImmutableArray<int> ImmutableArrayTest()
+    {
+        var builder = ImmutableArray.CreateBuilder<int>();
+
+        for (var n = 0; n < this.Size; n++)
         {
-            var array = new int[this.Size];
-
-            for (var n = 0; n < this.Size; n++)
-            {
-                array[n] = n;
-            }
-
-            return array;
+            builder.Add(n);
         }
 
-        [Benchmark]
-        public ImmutableArray<int> ImmutableArrayTest()
-        {
-            var builder = ImmutableArray.CreateBuilder<int>();
-
-            for (var n = 0; n < this.Size; n++)
-            {
-                builder.Add(n);
-            }
-
-            return builder.ToImmutable();
-        }
+        return builder.ToImmutable();
     }
 }

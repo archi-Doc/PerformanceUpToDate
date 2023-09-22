@@ -8,52 +8,51 @@ using BenchmarkDotNet.Attributes;
 #pragma warning disable SA1307 // Accessible fields should begin with upper-case letter
 #pragma warning disable SA1401 // Fields should be private
 
-namespace PerformanceUpToDate
+namespace PerformanceUpToDate;
+
+[Config(typeof(BenchmarkConfig))]
+public class DelegateTest
 {
-    [Config(typeof(BenchmarkConfig))]
-    public class DelegateTest
+    private uint count = 0;
+
+    private Func<uint, uint> increaseDelegate = (count) =>
     {
-        private uint count = 0;
-
-        private Func<uint, uint> increaseDelegate = (count) =>
+        unchecked
         {
-            unchecked
-            {
-                return count++;
-            }
-        };
-
-        public DelegateTest()
-        {
+            return count++;
         }
+    };
 
-        [Benchmark]
-        public uint Direct()
+    public DelegateTest()
+    {
+    }
+
+    [Benchmark]
+    public uint Direct()
+    {
+        unchecked
         {
-            unchecked
-            {
-                return this.count++;
-            }
+            return this.count++;
         }
+    }
 
-        [Benchmark]
-        public uint Method()
-        {
-            return this.IncreaseMethod();
-        }
+    [Benchmark]
+    public uint Method()
+    {
+        return this.IncreaseMethod();
+    }
 
-        [Benchmark]
-        public uint Delegate()
-        {
-            return this.increaseDelegate(this.count);
-        }
+    [Benchmark]
+    public uint Delegate()
+    {
+        return this.increaseDelegate(this.count);
+    }
 
-        private uint IncreaseMethod()
+    private uint IncreaseMethod()
+    {
+        unchecked
         {
-            unchecked
-            {
-                return this.count++;
-            }
+            return this.count++;
         }
     }
 }

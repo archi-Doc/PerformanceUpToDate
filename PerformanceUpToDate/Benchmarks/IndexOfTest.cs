@@ -8,65 +8,64 @@ using System.Runtime.InteropServices;
 using System.Text;
 using BenchmarkDotNet.Attributes;
 
-namespace PerformanceUpToDate
+namespace PerformanceUpToDate;
+
+[Config(typeof(BenchmarkConfig))]
+public class IndexOfTest
 {
-    [Config(typeof(BenchmarkConfig))]
-    public class IndexOfTest
+    private int[] source = default!;
+
+    public IndexOfTest()
     {
-        private int[] source = default!;
+    }
 
-        public IndexOfTest()
+    [Params(10, 100, 10_000)]
+    public int Size { get; set; }
+
+    public int Value { get; set; }
+
+    public IComparer<int> Comparer { get; private set; } = default!;
+
+    [GlobalSetup]
+    public void Setup()
+    {
+        this.source = new int[this.Size];
+        this.Comparer = Comparer<int>.Default;
+        this.Value = this.Size / 2;
+        for (var n = 0; n < this.Size; n++)
         {
+            this.source[n] = n;
         }
+    }
 
-        [Params(10, 100, 10_000)]
-        public int Size { get; set; }
+    [Benchmark]
+    public bool ArrayIndexOf() => Array.IndexOf(this.source, this.Value) >= 0;
 
-        public int Value { get; set; }
-
-        public IComparer<int> Comparer { get; private set; } = default!;
-
-        [GlobalSetup]
-        public void Setup()
+    [Benchmark]
+    public bool ForEqual()
+    {
+        for (var n = 0; n < this.Size; n++)
         {
-            this.source = new int[this.Size];
-            this.Comparer = Comparer<int>.Default;
-            this.Value = this.Size / 2;
-            for (var n = 0; n < this.Size; n++)
+            if (this.source[n] == this.Value)
             {
-                this.source[n] = n;
+                return true;
             }
         }
 
-        [Benchmark]
-        public bool ArrayIndexOf() => Array.IndexOf(this.source, this.Value) >= 0;
+        return false;
+    }
 
-        [Benchmark]
-        public bool ForEqual()
+    [Benchmark]
+    public bool ForComparer()
+    {
+        for (var n = 0; n < this.Size; n++)
         {
-            for (var n = 0; n < this.Size; n++)
+            if (this.Comparer.Compare(this.source[n], this.Value) == 0)
             {
-                if (this.source[n] == this.Value)
-                {
-                    return true;
-                }
+                return true;
             }
-
-            return false;
         }
 
-        [Benchmark]
-        public bool ForComparer()
-        {
-            for (var n = 0; n < this.Size; n++)
-            {
-                if (this.Comparer.Compare(this.source[n], this.Value) == 0)
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
+        return false;
     }
 }

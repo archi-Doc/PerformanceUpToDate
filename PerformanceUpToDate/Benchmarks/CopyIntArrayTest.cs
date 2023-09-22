@@ -8,45 +8,44 @@ using System.Runtime.InteropServices;
 using System.Text;
 using BenchmarkDotNet.Attributes;
 
-namespace PerformanceUpToDate
+namespace PerformanceUpToDate;
+
+[Config(typeof(BenchmarkConfig))]
+public class CopyIntArrayTest
 {
-    [Config(typeof(BenchmarkConfig))]
-    public class CopyIntArrayTest
+    public int[] SourceArray = default!;
+    public int[] DestinationArray = default!;
+
+    public CopyIntArrayTest()
     {
-        public int[] SourceArray = default!;
-        public int[] DestinationArray = default!;
+    }
 
-        public CopyIntArrayTest()
+    [Params(10, 100)]
+    public int Size { get; set; }
+
+    [GlobalSetup]
+    public void Setup()
+    {
+        this.SourceArray = new int[this.Size];
+        this.DestinationArray = new int[this.Size];
+    }
+
+    [Benchmark]
+    public int[] ForLoop()
+    {
+        for (var n = 0; n < this.SourceArray.Length; n++)
         {
+            this.DestinationArray[n] = this.SourceArray[n];
         }
 
-        [Params(10, 100)]
-        public int Size { get; set; }
+        return this.DestinationArray;
+    }
 
-        [GlobalSetup]
-        public void Setup()
-        {
-            this.SourceArray = new int[this.Size];
-            this.DestinationArray = new int[this.Size];
-        }
+    [Benchmark]
+    public int[] ArrayCopy()
+    {
+        Array.Copy(this.SourceArray, this.DestinationArray, this.SourceArray.Length);
 
-        [Benchmark]
-        public int[] ForLoop()
-        {
-            for (var n = 0; n < this.SourceArray.Length; n++)
-            {
-                this.DestinationArray[n] = this.SourceArray[n];
-            }
-
-            return this.DestinationArray;
-        }
-
-        [Benchmark]
-        public int[] ArrayCopy()
-        {
-            Array.Copy(this.SourceArray, this.DestinationArray, this.SourceArray.Length);
-
-            return this.DestinationArray;
-        }
+        return this.DestinationArray;
     }
 }
