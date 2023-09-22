@@ -7,6 +7,8 @@ using BenchmarkDotNet.Attributes;
 using CommandLine.Text;
 
 #pragma warning disable SA1649 // File name should match first type name
+#pragma warning disable CS0414
+#pragma warning disable CS0649
 
 namespace PerformanceUpToDate;
 
@@ -15,14 +17,22 @@ internal class CalcClass
     private int x = 2;
 }
 
-internal readonly struct Int128Struct
+internal readonly struct Int128Ripper
 {
-    public Int128Struct(Int128 value)
+    public Int128Ripper(Int128 value)
     {
     }
 
+#if BIGENDIAN
+    public readonly ulong Upper;
+    public readonly ulong Lower;
+#else
     public readonly ulong Lower;
     public readonly ulong Upper;
+#endif
+
+    public override string ToString()
+        => $"({this.Upper}, {this.Lower})";
 
     // private readonly Int128 value;
 
@@ -39,19 +49,80 @@ internal readonly struct Int128Struct
 
 public static class Int128Helper
 {
-    public static double ToDouble(this Int128 value)
+    private const double DoubleToIntThreshold = 1_000_000_000_000_000_000d;
+
+    public static unsafe double ToDouble(this Int128 value)
+    {
+        /*ulong* x = (ulong*)&value;
+        if (x[1] == 0)
+        {
+            return (double)x[0];
+        }
+        else if (~x[1] == 0)
+        {
+            return (double)(long)x[0];
+        }
+        else
+        {
+            return (double)value;
+        }*/
+
+        var ripper = Unsafe.As<Int128, Int128Ripper>(ref value);
+        if (ripper.Upper == 0)
+        {
+            return (double)ripper.Lower;
+        }
+        else if (~ripper.Upper == 0)
+        {
+            return (double)(long)ripper.Lower;
+        }
+        else
+        {
+            return (double)value;
+        }
+    }
+
+    public static unsafe double ToDouble(this UInt128 value)
+    {
+        var ripper = Unsafe.As<UInt128, Int128Ripper>(ref value);
+        if (ripper.Upper == 0)
+        {
+            return (double)ripper.Lower;
+        }
+        else
+        {
+            return (double)value;
+        }
+    }
+
+    /*public static double ToDouble2(this Int128 value)
     {
         return (value >> 64) == 0 ? (double)(long)value : (double)value;
     }
 
-    public static double ToDouble2(this Int128 value)
-    {
-        return Unsafe.As<Int128, Int128Struct>(ref value).Upper == 0 ? (double)(long)value : (double)value;
-    }
-
-    public static unsafe double ToDouble3(this Int128 value)
+    public static double ToDouble3(this Int128 value)
     {
         return Int128.LeadingZeroCount(value) >= 64 ? (double)(long)value : (double)value;
+    }*/
+
+    public static Int128 ToInt128(this double value)
+    {
+        if (value >= -DoubleToIntThreshold && value <= +DoubleToIntThreshold)
+        {
+            return (Int128)(long)value; // new(0, (ulong)Math.Round(value));
+        }
+
+        return (Int128)value;
+    }
+
+    public static UInt128 ToUInt128(this double value)
+    {
+        if (value >= 0d && value <= +DoubleToIntThreshold)
+        {
+            return (UInt128)(long)value;
+        }
+
+        return (UInt128)value;
     }
 }
 
@@ -62,6 +133,7 @@ public class CalcTest
     private long[] longData = new long[N];
     private Int128[] int128Data = new Int128[N];
     private decimal[] decimalData = new decimal[N];
+    private double[] doubleData = new double[N];
 
     public CalcTest()
     {
@@ -78,29 +150,88 @@ public class CalcTest
             this.longData[i] = i + 1;
             this.int128Data[i] = i + 1;
             this.decimalData[i] = i + 1;
+            this.doubleData[i] = i + 1;
         }
 
-        var totalLong = this.TotalLong();
+        /*var totalLong = this.TotalLong();
         var totalInt128 = this.TotalInt128();
         var totalDecimal = this.TotalDecimal();
         var ratioLong = this.RatioLong();
-        var ratioInt128 = this.RatioInt128();
-        var ratioDecimal = this.RatioDecimal();
+        var ratioInt128 = this.RatioInt128Naive();
+        var ratioDecimal = this.RatioDecimal();*/
 
-        var c = new CalcClass();
-        var x = CalcClassX(c);
+        // var f = -1d;
+        // var ul = checked((ulong)f);
+        var d = ((Int128)(1)).ToDouble();
+        d = ((Int128)(0)).ToDouble();
+        d = ((Int128)(-1)).ToDouble();
+        d = ((Int128)(-10)).ToDouble();
+        d = ((Int128)(0.1)).ToDouble();
+        d = ((Int128)(-0.1)).ToDouble();
+        d = ((Int128)(-11.1)).ToDouble();
+        d = ((Int128)(9223372036854775800)).ToDouble();
+        d = ((Int128)(-9223372036854775800)).ToDouble();
+        d = ((Int128)(19223372036854775800d)).ToDouble();
+        d = ((Int128)(-19223372036854775800d)).ToDouble();
+        d = ((Int128)(123_000_000_000_000_000_000_000_000d)).ToDouble();
+        d = ((Int128)(-123_000_000_000_000_000_000_000_000d)).ToDouble();
 
-        var i128 = new Int128(123, 456);
-        var st = Unsafe.As<Int128, Int128Struct>(ref i128);
-        // var higher = Int128Upper(i128);
-        // var lower = new Int128Struct(i128).Lower;
+        d = ((UInt128)(1)).ToDouble();
+        d = ((UInt128)(0)).ToDouble();
+        d = ((UInt128)(-1)).ToDouble();
+        d = ((UInt128)(-10)).ToDouble();
+        d = ((UInt128)(0.1)).ToDouble();
+        d = ((UInt128)(-0.1)).ToDouble();
+        d = ((UInt128)(-11.1)).ToDouble();
+        d = ((UInt128)(9223372036854775800)).ToDouble();
+        d = ((UInt128)(-9223372036854775800)).ToDouble();
+        d = ((UInt128)(19223372036854775800d)).ToDouble();
+        d = ((UInt128)(-19223372036854775800d)).ToDouble();
+        d = ((UInt128)(123_000_000_000_000_000_000_000_000d)).ToDouble();
+        d = ((UInt128)(-123_000_000_000_000_000_000_000_000d)).ToDouble();
+
+        var x = (0d).ToInt128();
+        x = (1d).ToInt128();
+        x = (-1d).ToInt128();
+        x = (10.1d).ToInt128();
+        x = (-10.1d).ToInt128();
+        x = (9223372036854775800d).ToInt128();
+        x = (-9223372036854775800d).ToInt128();
+        x = (19223372036854775800d).ToInt128();
+        x = (-19223372036854775800d).ToInt128();
+        x = (123_000_000_000_000_000_000_000_000d).ToInt128();
+        x = (-123_000_000_000_000_000_000_000_000d).ToInt128();
+
+        var y = (0d).ToUInt128();
+        y = (1d).ToUInt128();
+        y = (-1d).ToUInt128();
+        y = (10.1d).ToUInt128();
+        y = (-10.1d).ToUInt128();
+        y = (9223372036854775800d).ToUInt128();
+        y = (-9223372036854775800d).ToUInt128();
+        y = (19223372036854775800d).ToUInt128();
+        y = (-19223372036854775800d).ToUInt128();
+        y = (123_000_000_000_000_000_000_000_000d).ToUInt128();
+        y = (-123_000_000_000_000_000_000_000_000d).ToUInt128();
     }
 
     // [Benchmark]
+    public UInt128 DoubleToUInt128()
+    {
+        var total = default(UInt128);
+        for (var i = 0; i < this.doubleData.Length; i++)
+        {
+            total += this.doubleData[i].ToUInt128();
+        }
+
+        return total;
+    }
+
+    [Benchmark]
     public long TotalLong()
         => this.longData.Sum();
 
-    // [Benchmark]
+    [Benchmark]
     public Int128 TotalInt128()
     {
         var total = default(Int128);
@@ -112,11 +243,11 @@ public class CalcTest
         return total;
     }
 
-    // [Benchmark]
+    [Benchmark]
     public decimal TotalDecimal()
         => this.decimalData.Sum();
 
-    // [Benchmark]
+    [Benchmark]
     public double RatioLong()
     {
         var ratio = 0d;
@@ -128,8 +259,8 @@ public class CalcTest
         return ratio;
     }
 
-    // [Benchmark]
-    public double RatioInt128()
+    [Benchmark]
+    public double RatioInt128Naive()
     {
         var ratio = 0d;
         for (var i = 0; i < this.int128Data.Length; i++)
@@ -140,25 +271,25 @@ public class CalcTest
         return ratio;
     }
 
-    // [Benchmark]
-    public double RatioInt128B()
+    [Benchmark]
+    public double RatioInt128Opt()
     {
         var ratio = 0d;
         for (var i = 0; i < this.int128Data.Length; i++)
         {
-            ratio += (double)(long)this.int128Data[i] / (double)(long)this.int128Data[N - 1 - i];
+            ratio += this.int128Data[i].ToDouble() / this.int128Data[N - 1 - i].ToDouble();
         }
 
         return ratio;
     }
 
-    // [Benchmark]
+    [Benchmark]
     public double RatioDecimal()
     {
         var ratio = 0d;
         for (var i = 0; i < this.decimalData.Length; i++)
         {
-            ratio += (double)this.decimalData[i] / (double)this.decimalData[N - 1 - i];
+            ratio += (double)(this.decimalData[i] / this.decimalData[N - 1 - i]);
         }
 
         return ratio;
@@ -177,7 +308,7 @@ public class CalcTest
     }
 
     [Benchmark]
-    public Int128 Sum2Int128()
+    public Int128 Sum2Int128Naive()
     {
         Int128 sum = 0;
         for (var i = 0; i < this.int128Data.Length; i++)
@@ -189,72 +320,48 @@ public class CalcTest
     }
 
     [Benchmark]
-    public Int128 Sum2Int128B()
+    public Int128 Sum2Int128Opt()
     {
         Int128 sum = 0;
         for (var i = 0; i < this.int128Data.Length; i++)
         {
-            sum += (Int128)(this.int128Data[i].ToDouble() * 0.3d);
+            sum += (this.int128Data[i].ToDouble() * 0.3d).ToInt128();
         }
 
         return sum;
     }
 
     [Benchmark]
-    public Int128 Sum2Int128C()
+    public Int128 Sum2Int128Long()
     {
         Int128 sum = 0;
         for (var i = 0; i < this.int128Data.Length; i++)
         {
-            sum += (Int128)(this.int128Data[i].ToDouble2() * 0.3d);
+            sum += (Int128)(long)((double)(long)this.int128Data[i] * 0.3d);
         }
 
         return sum;
     }
 
     [Benchmark]
-    public Int128 Sum2Int128X()
-    {
-        Int128 sum = 0;
-        for (var i = 0; i < this.int128Data.Length; i++)
-        {
-            sum += (Int128)((double)(long)this.int128Data[i] * 0.3d);
-        }
-
-        return sum;
-    }
-
-    [Benchmark]
-    public Int128 Sum2Int128D()
-    {
-        Int128 sum = 0;
-        for (var i = 0; i < this.int128Data.Length; i++)
-        {
-            sum += (Int128)(this.int128Data[i].ToDouble2() * 0.3d);
-        }
-
-        return sum;
-    }
-
-    [Benchmark]
-    public Int128 Sum2Int128E()
-    {
-        Int128 sum = 0;
-        for (var i = 0; i < this.int128Data.Length; i++)
-        {
-            sum += (Int128)(long)(this.int128Data[i].ToDouble2() * 0.3d);
-        }
-
-        return sum;
-    }
-
-    // [Benchmark]
     public Decimal Sum2Decimal()
     {
         Decimal sum = 0;
         for (var i = 0; i < this.decimalData.Length; i++)
         {
             sum += (Decimal)((double)this.decimalData[i] * 0.3d);
+        }
+
+        return sum;
+    }
+
+    [Benchmark]
+    public Decimal Sum2Decimal2()
+    {
+        Decimal sum = 0;
+        for (var i = 0; i < this.decimalData.Length; i++)
+        {
+            sum += this.decimalData[i] * 0.3m;
         }
 
         return sum;
