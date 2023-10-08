@@ -2,17 +2,20 @@
 
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
 using System.Threading;
 using BenchmarkDotNet.Attributes;
 
-#pragma warning disable SA1000 // Keywords should be spaced correctly
-
 namespace PerformanceUpToDate;
+
+public interface ISyncDesignClass
+{
+    int X { get; set; }
+}
+
+public class SyncDesignClass : ISyncDesignClass
+{
+    public int X { get; set; }
+}
 
 [Config(typeof(BenchmarkConfig))]
 public class SyncDesignTest
@@ -24,6 +27,10 @@ public class SyncDesignTest
     public int Y;
 
     public volatile int V;
+
+    public SyncDesignClass Class = new();
+
+    public ISyncDesignClass Interface = new SyncDesignClass();
 
     public ConcurrentQueue<int> Queue { get; } = new();
 
@@ -95,6 +102,18 @@ public class SyncDesignTest
     {
         var y = Interlocked.Exchange(ref this.Y, this.X);
         return y;
+    }
+
+    [Benchmark]
+    public int ClassIncrement()
+    {
+        return this.Class.X++;
+    }
+
+    [Benchmark]
+    public int InterfaceIncrement()
+    {
+        return this.Interface.X++;
     }
 
     /*[Benchmark]
