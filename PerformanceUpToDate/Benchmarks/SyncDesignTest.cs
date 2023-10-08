@@ -17,6 +17,11 @@ public class SyncDesignClass : ISyncDesignClass
     public int X { get; set; }
 }
 
+public class SyncDesignClass2 : ISyncDesignClass
+{
+    int ISyncDesignClass.X { get; set; }
+}
+
 [Config(typeof(BenchmarkConfig))]
 public class SyncDesignTest
 {
@@ -31,6 +36,8 @@ public class SyncDesignTest
     public SyncDesignClass Class = new();
 
     public ISyncDesignClass Interface = new SyncDesignClass();
+
+    public SyncDesignClass2 Class2 = new();
 
     public ConcurrentQueue<int> Queue { get; } = new();
 
@@ -114,6 +121,12 @@ public class SyncDesignTest
     public int InterfaceIncrement()
     {
         return this.Interface.X++;
+    }
+
+    [Benchmark]
+    public int InterfaceIncrement2()
+    {
+        return ((ISyncDesignClass)this.Class2).X++;
     }
 
     /*[Benchmark]
