@@ -3,9 +3,19 @@
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 
-#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
-
 namespace PerformanceUpToDate;
+
+public static class TaskCache
+{
+    static TaskCache()
+    {
+        TrueTask = Task.FromResult(true);
+        FalseTask = Task.FromResult(false);
+    }
+
+    public static readonly Task<bool> TrueTask;
+    public static readonly Task<bool> FalseTask;
+}
 
 [Config(typeof(BenchmarkConfig))]
 public class TaskTest3
@@ -22,6 +32,12 @@ public class TaskTest3
 
         public Task<bool> TaskTrueB()
             => this.TaskTrue();
+
+        public Task<bool> TaskTrueC()
+            => Task.FromResult(true);
+
+        public Task<bool> TaskTrueD()
+            => TaskCache.TrueTask;
 
         public async ValueTask<bool> ValueTaskTrue2()
             => await this.ValueTaskTrue();
@@ -137,6 +153,14 @@ public class TaskTest3
     [Benchmark]
     public async Task<bool> TaskTrueB()
         => await this.Class1.TaskTrueB();
+
+    [Benchmark]
+    public Task<bool> TaskTrueC()
+        => this.Class1.TaskTrueC();
+
+    [Benchmark]
+    public Task<bool> TaskTrueD()
+        => this.Class1.TaskTrueD();
 
     [Benchmark]
     public async ValueTask<bool> ValueTaskTrue2()
