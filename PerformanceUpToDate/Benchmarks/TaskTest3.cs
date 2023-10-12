@@ -3,6 +3,8 @@
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 
+#pragma warning disable CS0414
+
 namespace PerformanceUpToDate;
 
 public static class TaskCache
@@ -20,6 +22,16 @@ public static class TaskCache
 [Config(typeof(BenchmarkConfig))]
 public class TaskTest3
 {
+    private static readonly Task<TestEnum> TestEnumC = Task.FromResult(TestEnum.C);
+    private static readonly ValueTask<TestEnum> TestEnumC2 = ValueTask.FromResult(TestEnum.C);
+
+    public enum TestEnum
+    {
+        A,
+        B,
+        C,
+    }
+
     public class TaskClass
     {
         public TaskClass(int x)
@@ -159,6 +171,46 @@ public class TaskTest3
         => this.Class1.TaskTrueC();
 
     [Benchmark]
+    public Task<int> TaskInt1()
+        => Task.FromResult(1);
+
+    [Benchmark]
+    public Task<int> TaskInt10000()
+        => Task.FromResult(10000);
+
+    [Benchmark]
+    public ValueTask<int> ValueTaskInt1()
+        => ValueTask.FromResult(1);
+
+    [Benchmark]
+    public ValueTask<int> ValueTaskInt10000()
+        => ValueTask.FromResult(10000);
+
+    [Benchmark]
+    public Task<TaskClass> Task_Class()
+        => Task.FromResult(this.Class1);
+
+    [Benchmark]
+    public ValueTask<TaskClass> ValueTask_Class()
+        => ValueTask.FromResult(this.Class1);
+
+    [Benchmark]
+    public Task<TestEnum> Task_Enum()
+        => Task.FromResult(TestEnum.C);
+
+    [Benchmark]
+    public ValueTask<TestEnum> ValueTask_Enum()
+        => ValueTask.FromResult(TestEnum.C);
+
+    [Benchmark]
+    public Task<TestEnum> Task_Enum2()
+        => TestEnumC;
+
+    [Benchmark]
+    public ValueTask<TestEnum> ValueTask_Enum2()
+        => TestEnumC2;
+
+    /*[Benchmark]
     public Task<bool> TaskTrueD()
         => this.Class1.TaskTrueD();
 
@@ -212,5 +264,5 @@ public class TaskTest3
 
     [Benchmark]
     public async ValueTask<int> ValueTaskInt2()
-        => await this.Class1.ValueTaskInt2(this.x);
+        => await this.Class1.ValueTaskInt2(this.x);*/
 }
