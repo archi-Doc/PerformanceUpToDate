@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Threading;
 using BenchmarkDotNet.Attributes;
 
@@ -41,7 +42,7 @@ public class SyncDesignTest
 
     public ConcurrentQueue<int> Queue { get; } = new();
 
-    public ConcurrentQueue<int> Queue2 { get; } = new();
+    public Queue<int> Queue2 { get; } = new();
 
     public ConcurrentStack<int> Stack { get; } = new();
 
@@ -129,7 +130,21 @@ public class SyncDesignTest
         return ((ISyncDesignClass)this.Class2).X++;
     }
 
-    /*[Benchmark]
+    [Benchmark]
+    public int EnqueueDequeue()
+    {
+        this.Queue2.Enqueue(this.X);
+        if (this.Queue2.TryDequeue(out var x))
+        {
+            return x;
+        }
+        else
+        {
+            return 0;
+        }
+    }
+
+    [Benchmark]
     public int Concurrent_EnqueueDequeue()
     {
         this.Queue.Enqueue(this.X);
@@ -157,7 +172,7 @@ public class SyncDesignTest
         }
     }
 
-    [IterationSetup(Target = "Concurrent_TryDequeue2")]
+    /*[IterationSetup(Target = "Concurrent_TryDequeue2")]
     public void SetupCuncurrent()
     {
         Console.WriteLine("setup");
