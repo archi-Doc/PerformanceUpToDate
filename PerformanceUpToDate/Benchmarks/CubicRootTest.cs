@@ -9,6 +9,8 @@ namespace PerformanceUpToDate;
 [Config(typeof(BenchmarkConfig))]
 public class CubicRootTest
 {
+    private const int N = 100;
+
     private static ReadOnlySpan<byte> v => new byte[]
     {
         0, 54, 54, 54,  118, 118, 118, 118,
@@ -74,11 +76,19 @@ public class CubicRootTest
     private uint a4 = 10_000;
     private uint a5 = 100_000;
 
-    private double d1 = 10;
-    private double d2 = 100;
+    private uint[] uArray;
+    private double[] dArray;
 
     public CubicRootTest()
     {
+        this.uArray = new uint[N];
+        this.dArray = new double[N];
+
+        for (var i = 0; i < N; i++)
+        {
+            this.uArray[i] = (uint)i;
+            this.dArray[i] = (double)i;
+        }
     }
 
     [Benchmark]
@@ -101,9 +111,49 @@ public class CubicRootTest
 
     [Benchmark]
     public uint MultiplyUint()
-        => this.a1 * this.a2;
+    {
+        uint x = 0;
+        for (var i = 1; i < N; i++)
+        {
+            x += this.uArray[i - 1] * this.uArray[i];
+        }
+
+        return x;
+    }
 
     [Benchmark]
     public double MultiplyDouble()
-        => this.d1 * this.d2;
+    {
+        double x = 0;
+        for (var i = 1; i < N; i++)
+        {
+            x += this.dArray[i - 1] * this.dArray[i];
+        }
+
+        return x;
+    }
+
+    [Benchmark]
+    public uint DivideUint()
+    {
+        uint x = 0;
+        for (var i = 1; i < N; i++)
+        {
+            x += this.uArray[i - 1] / this.uArray[i];
+        }
+
+        return x;
+    }
+
+    [Benchmark]
+    public double DivideDouble()
+    {
+        double x = 0;
+        for (var i = 1; i < N; i++)
+        {
+            x += this.dArray[i - 1] / this.dArray[i];
+        }
+
+        return x;
+    }
 }
