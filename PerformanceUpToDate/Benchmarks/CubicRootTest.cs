@@ -74,6 +74,9 @@ public class CubicRootTest
     private uint a4 = 10_000;
     private uint a5 = 100_000;
 
+    private double d1 = 10;
+    private double d2 = 100;
+
     public CubicRootTest()
     {
     }
@@ -95,4 +98,12 @@ public class CubicRootTest
     {
         return CubicRoot2(this.a1) + CubicRoot2(this.a2) + CubicRoot2(this.a3) + CubicRoot2(this.a4) + CubicRoot2(this.a5);
     }
+
+    [Benchmark]
+    public uint MultiplyUint()
+        => this.a1 * this.a2;
+
+    [Benchmark]
+    public double MultiplyDouble()
+        => this.d1 * this.d2;
 }
