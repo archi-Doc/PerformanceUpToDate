@@ -67,6 +67,17 @@ public class CubicRootTest
         return x;
     }
 
+    public static double CubeRoot(double x, double epsilon = 0.01)
+    {
+        double guess = x;
+        while (Math.Abs((guess * guess * guess) - x) >= epsilon)
+        {
+            guess = ((2.0 * guess) + (x / (guess * guess))) / 3.0;
+        }
+
+        return guess;
+    }
+
     public static uint ReferenceRoot(ulong a)
         => (uint)Math.Cbrt(a);
 
@@ -76,11 +87,19 @@ public class CubicRootTest
     private uint a4 = 10_000;
     private uint a5 = 100_000;
 
+    private double d1 = 10;
+    private double d2 = 100;
+    private double d3 = 1_000;
+    private double d4 = 10_000;
+    private double d5 = 100_000;
+
     private uint[] uArray;
     private double[] dArray;
 
     public CubicRootTest()
     {
+        var d = CubeRoot(10d);
+
         this.uArray = new uint[N];
         this.dArray = new double[N];
 
@@ -104,12 +123,18 @@ public class CubicRootTest
     }
 
     [Benchmark]
-    public uint NewtonRaphson2()
+    public double NewtonRaphson2()
     {
-        return CubicRoot2(this.a1) + CubicRoot2(this.a2) + CubicRoot2(this.a3) + CubicRoot2(this.a4) + CubicRoot2(this.a5);
+        return Math.Cbrt(this.d1) + Math.Cbrt(this.d2) + Math.Cbrt(this.d3) + Math.Cbrt(this.d4) + Math.Cbrt(this.d5);
     }
 
     [Benchmark]
+    public double NewtonRaphson3()
+    {
+        return CubeRoot(this.d1) + CubeRoot(this.d2) + CubeRoot(this.d3) + CubeRoot(this.d4) + CubeRoot(this.d5);
+    }
+
+    /*[Benchmark]
     public uint MultiplyUint()
     {
         uint x = 0;
@@ -155,5 +180,5 @@ public class CubicRootTest
         }
 
         return x;
-    }
+    }*/
 }
