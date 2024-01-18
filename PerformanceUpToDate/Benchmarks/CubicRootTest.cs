@@ -134,7 +134,7 @@ public class CubicRootTest
         return CubeRoot(this.d1) + CubeRoot(this.d2) + CubeRoot(this.d3) + CubeRoot(this.d4) + CubeRoot(this.d5);
     }
 
-    /*[Benchmark]
+    [Benchmark]
     public uint MultiplyUint()
     {
         uint x = 0;
@@ -180,5 +180,5 @@ public class CubicRootTest
         }
 
         return x;
-    }*/
+    }
 }
