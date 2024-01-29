@@ -37,6 +37,27 @@ public class CancellationTokenTest
     [Benchmark]
     public int Task_WaitAsync()
     {
+        var task = this.TestTask().WaitAsync(this.cancellationToken);
+        return task.GetHashCode();
+    }
+
+    [Benchmark]
+    public int Task_WaitAsyncB()
+    {
+        var task = this.TestTask();
+        return task.GetHashCode();
+    }
+
+    [Benchmark]
+    public int Task_WaitAsyncC()
+    {
+        var task = this.TestTask().WaitAsync(default(CancellationToken));
+        return task.GetHashCode();
+    }
+
+    [Benchmark]
+    public int Task_WaitAsync2()
+    {
         var task = this.TestTask().WaitAsync(TimeSpan.FromSeconds(1), this.cancellationToken);
         return task.GetHashCode();
     }
