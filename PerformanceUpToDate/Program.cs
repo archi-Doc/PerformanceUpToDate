@@ -29,6 +29,7 @@ public class Program
         var switcher = new BenchmarkSwitcher(new[]
 #pragma warning restore SA1515 // Single-line comment should be preceded by blank line
         {
+            typeof(SizeOfBenchmark),
             typeof(DelegateOrGenericsBenchmark),
             typeof(MemoryMarshalTest),
             typeof(CubicRootTest),
