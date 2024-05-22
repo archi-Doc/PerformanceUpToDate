@@ -29,7 +29,7 @@ public class DelegateOrGenericsBenchmark
     public DelegateOrGenericsBenchmark()
     {
         this.tc = new();
-        this.tc2 = tc;
+        this.tc2 = this.tc;
     }
 
     private DelegateOrGenericsClass tc;

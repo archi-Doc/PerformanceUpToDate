@@ -4,6 +4,7 @@ using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using BenchmarkDotNet.Attributes;
+using PerformanceUpToDate.Design;
 
 namespace PerformanceUpToDate;
 
@@ -84,12 +85,13 @@ public class ByteStack
 [Config(typeof(BenchmarkConfig))]
 public class BytePoolTest
 {
-    private const int N = 32;
+    private const int N = 256; // 32
 
     private ConcurrentQueue<byte[]> concurrentQueue = new();
     private int count;
     private ByteStack byteStack = new(N, 4);
     private BlockingCollection<byte[]> blockingCollection = new(4);
+    private CircularQueue<byte[]> circularQueue = new(4);
 
     public BytePoolTest()
     {
@@ -97,6 +99,17 @@ public class BytePoolTest
         this.byteStack.Push(bin);
         this.byteStack.Pop();
         this.byteStack.Push(bin);
+
+        if (!this.circularQueue.TryDequeue(out bin))
+        {
+            bin = new byte[N];
+        }
+
+        this.circularQueue.TryEnqueue(bin);
+        if (!this.circularQueue.TryDequeue(out bin))
+        {
+            bin = new byte[N];
+        }
     }
 
     [Benchmark]
@@ -152,17 +165,17 @@ public class BytePoolTest
         return (byteArray, this.concurrentQueue.Count);
     }
 
-    [Benchmark]
+    /*[Benchmark]
     public byte[] ByteStack()
-    {// ByteStack
+    {// ByteStack -> NOT thread-safe
         var byteArray = this.byteStack.Pop();
         this.byteStack.Push(byteArray);
         return byteArray;
-    }
+    }*/
 
-    [Benchmark]
+    /*[Benchmark]
     public byte[] BlockingCollection()
-    {// BlockingCollection
+    {// BlockingCollection -> Slow
         byte[] byteArray;
         if (this.blockingCollection.TryTake(out byteArray))
         {
@@ -173,6 +186,19 @@ public class BytePoolTest
         }
 
         this.blockingCollection.TryAdd(byteArray);
+        return byteArray;
+    }*/
+
+    [Benchmark]
+    public byte[] CircularQueue()
+    {// CircularQueue
+        byte[] byteArray;
+        if (!this.circularQueue.TryDequeue(out byteArray))
+        {
+            byteArray = new byte[N];
+        }
+
+        this.circularQueue.TryEnqueue(byteArray);
         return byteArray;
     }
 }
