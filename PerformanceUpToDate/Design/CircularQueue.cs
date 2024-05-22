@@ -1,6 +1,5 @@
 ﻿// Copyright (c) All contributors. All rights reserved. Licensed under the MIT license.
 
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Numerics;
 using System.Runtime.CompilerServices;
@@ -9,22 +8,36 @@ using System.Threading;
 
 namespace PerformanceUpToDate.Design;
 
+/// <summary>
+///  A thread-safe bounded circular queue.<br/>
+///  While it can only perform simple <see cref="TryEnqueue(T)"/> and <see cref="TryDequeue(out T)"/> operations <br/>
+///  and has restrictions such as the queue capacity being a power of 2, <br/>
+///  it processes slightly faster than <see cref="System.Collections.Concurrent.ConcurrentQueue{T}"/> with a bounded limit.<br/>
+///  Use it for caching and similar purposes.
+/// </summary>
+/// <typeparam name="T">The type of elements in the queue.</typeparam>
 public sealed class CircularQueue<T>
 {
+    private const int MinimumCapacity = 4;
     private readonly Slot[] slots;
     private readonly int slotsMask;
     private PaddedHeadAndTail headAndTail;
 
     /// <summary>Initializes a new instance of the <see cref="CircularQueue{T}"/> class.</summary>
-    /// <param name="boundedLength">The maximum number of elements the queue can contain. Must be a power of 2.</param>
-    internal CircularQueue(int boundedLength)
+    /// <param name="capacity">The maximum number of elements the queue can contain.</param>
+    internal CircularQueue(int capacity)
     {
-        // Validate the length
-        Debug.Assert(boundedLength >= 2, $"Must be >= 2, got {boundedLength}");
-        Debug.Assert(BitOperations.IsPow2(boundedLength), $"Must be a power of 2, got {boundedLength}");
+        if (capacity < MinimumCapacity)
+        {
+            capacity = MinimumCapacity;
+        }
+        else
+        {
+            capacity = 1 << (32 - BitOperations.LeadingZeroCount((uint)capacity - 1));
+        }
 
-        this.slots = new Slot[boundedLength];
-        this.slotsMask = boundedLength - 1;
+        this.slots = new Slot[capacity];
+        this.slotsMask = capacity - 1;
         for (var i = 0; i < this.slots.Length; i++)
         {
             this.slots[i].SequenceNumber = i;
@@ -112,20 +125,20 @@ public sealed class CircularQueue<T>
         public T? Item;
         public int SequenceNumber;
     }
+}
 
-    [StructLayout(LayoutKind.Explicit, Size = 3 * CacheLineSize)] // padding before/between/after fields
-    private struct PaddedHeadAndTail
-    {
+[StructLayout(LayoutKind.Explicit, Size = 3 * CacheLineSize)] // padding before/between/after fields
+internal struct PaddedHeadAndTail
+{
 #if TARGET_ARM64
     public const int CacheLineSize = 128;
 #else
-        public const int CacheLineSize = 64;
+    public const int CacheLineSize = 64;
 #endif
 
-        [FieldOffset(1 * CacheLineSize)]
-        public int Head;
+    [FieldOffset(1 * CacheLineSize)]
+    public int Head;
 
-        [FieldOffset(2 * CacheLineSize)]
-        public int Tail;
-    }
+    [FieldOffset(2 * CacheLineSize)]
+    public int Tail;
 }
