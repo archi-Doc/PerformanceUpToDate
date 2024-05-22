@@ -85,13 +85,13 @@ public class ByteStack
 [Config(typeof(BenchmarkConfig))]
 public class BytePoolTest
 {
-    private const int N = 256; // 32
+    private const int N = 512; // 32
 
     private ConcurrentQueue<byte[]> concurrentQueue = new();
     private int count;
-    private ByteStack byteStack = new(N, 4);
-    private BlockingCollection<byte[]> blockingCollection = new(4);
-    private CircularQueue<byte[]> circularQueue = new(4);
+    private ByteStack byteStack = new(N, 8);
+    private BlockingCollection<byte[]> blockingCollection = new(8);
+    private CircularQueue<byte[]> circularQueue = new(8);
 
     public BytePoolTest()
     {
