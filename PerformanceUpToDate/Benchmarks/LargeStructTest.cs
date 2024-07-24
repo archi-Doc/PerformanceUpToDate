@@ -70,6 +70,33 @@ public readonly struct LargeReadonlyStruct
         this.X1 = 1;
         this.X2 = 2;
         this.X3 = 3;
+    }
+
+    public LargeReadonlyStruct(ulong x0, ulong x1, ulong x2, ulong x3)
+    {
+        this.X0 = x0;
+        this.X1 = x1;
+        this.X2 = x2;
+        this.X3 = x3;
+    }
+
+    public readonly ulong X0;
+    public readonly ulong X1;
+    public readonly ulong X2;
+    public readonly ulong X3;
+
+    public ulong Sum()
+        => this.X0 + this.X1 + this.X2 + this.X3;
+}
+
+/*public readonly struct LargeReadonlyStruct
+{
+    public LargeReadonlyStruct()
+    {
+        this.X0 = 0;
+        this.X1 = 1;
+        this.X2 = 2;
+        this.X3 = 3;
         this.X4 = 4;
         this.X5 = 5;
         this.X6 = 6;
@@ -105,7 +132,7 @@ public readonly struct LargeReadonlyStruct
 
     public ulong Sum()
         => this.X0 + this.X1 + this.X2 + this.X3 + this.X4 + this.X5 + this.X6 + this.X7 + this.X8 + this.X9;
-}
+}*/
 
 [Config(typeof(BenchmarkConfig))]
 public class LargeStructTest
