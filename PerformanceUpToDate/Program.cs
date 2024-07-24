@@ -23,12 +23,13 @@ public class Program
 {
     public static void Main(string[] args)
     {
-        DebugRun<BytePoolTest>();
+        DebugRun<LargeStructTest>();
 
         // var summary = BenchmarkRunner.Run<ByteCopyTest>(); // SwapTest, MemoryAllocationTest, ByteCopyTest
         var switcher = new BenchmarkSwitcher(new[]
 #pragma warning restore SA1515 // Single-line comment should be preceded by blank line
         {
+            typeof(LargeStructTest),
             typeof(BytePoolTest),
             typeof(SizeOfBenchmark),
             typeof(DelegateOrGenericsBenchmark),
