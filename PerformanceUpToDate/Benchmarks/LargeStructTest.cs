@@ -1,6 +1,7 @@
 ﻿// Copyright (c) All contributors. All rights reserved. Licensed under the MIT license.
 
 using System.Runtime.CompilerServices;
+using Arc.Collections;
 using BenchmarkDotNet.Attributes;
 
 namespace PerformanceUpToDate;
@@ -29,6 +30,33 @@ public class LargeClass2_Struct
 
     public ulong Sum()
         => this.st.Sum();
+}
+
+public class LargeClass_Class2
+{
+    public LargeClass_Class2()
+    {
+
+    }
+
+    public LargeClass Class { get; } = new LargeClass();
+}
+
+public class LargeClass_Class3
+{
+    private static ObjectPool<LargeClass> pool = new(() => new LargeClass(), 1000);
+
+    public LargeClass_Class3()
+    {
+        this.Class = pool.Get();
+    }
+
+    public LargeClass Class { get; }
+
+    public void Return()
+    {
+        pool.Return(this.Class);
+    }
 }
 
 public class LargeClass_Class
@@ -62,34 +90,52 @@ public class LargeClass_Class
         => this.X0 + this.X1 + this.X2 + this.X3 + this.X4 + this.X5 + this.X6 + this.X7 + this.X8 + this.X9;
 }
 
-public readonly struct LargeReadonlyStruct
+public class LargeClass
 {
-    public LargeReadonlyStruct()
+    public LargeClass()
     {
         this.X0 = 0;
         this.X1 = 1;
         this.X2 = 2;
         this.X3 = 3;
+        this.X4 = 4;
+        this.X5 = 5;
+        this.X6 = 6;
+        this.X7 = 7;
+        this.X8 = 8;
+        this.X9 = 9;
     }
 
-    public LargeReadonlyStruct(ulong x0, ulong x1, ulong x2, ulong x3)
+    public LargeClass(ulong x0, ulong x1, ulong x2, ulong x3, ulong x4, ulong x5, ulong x6, ulong x7, ulong x8, ulong x9)
     {
         this.X0 = x0;
         this.X1 = x1;
         this.X2 = x2;
         this.X3 = x3;
+        this.X4 = x4;
+        this.X5 = x5;
+        this.X6 = x6;
+        this.X7 = x7;
+        this.X8 = x8;
+        this.X9 = x9;
     }
 
     public readonly ulong X0;
     public readonly ulong X1;
     public readonly ulong X2;
     public readonly ulong X3;
+    public readonly ulong X4;
+    public readonly ulong X5;
+    public readonly ulong X6;
+    public readonly ulong X7;
+    public readonly ulong X8;
+    public readonly ulong X9;
 
     public ulong Sum()
-        => this.X0 + this.X1 + this.X2 + this.X3;
+        => this.X0 + this.X1 + this.X2 + this.X3 + this.X4 + this.X5 + this.X6 + this.X7 + this.X8 + this.X9;
 }
 
-/*public readonly struct LargeReadonlyStruct
+public readonly struct LargeReadonlyStruct
 {
     public LargeReadonlyStruct()
     {
@@ -132,7 +178,7 @@ public readonly struct LargeReadonlyStruct
 
     public ulong Sum()
         => this.X0 + this.X1 + this.X2 + this.X3 + this.X4 + this.X5 + this.X6 + this.X7 + this.X8 + this.X9;
-}*/
+}
 
 [Config(typeof(BenchmarkConfig))]
 public class LargeStructTest
@@ -188,6 +234,22 @@ public class LargeStructTest
     {
         var c = new LargeClass_Class();
         return c.Sum();
+    }
+
+    [Benchmark]
+    public ulong LargeClassClass2_Sum()
+    {
+        var c = new LargeClass_Class2();
+        return c.Class.Sum();
+    }
+
+    [Benchmark]
+    public ulong LargeClassClass3_Sum()
+    {
+        var c = new LargeClass_Class3();
+        var x = c.Class.Sum();
+        c.Return();
+        return x;
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
