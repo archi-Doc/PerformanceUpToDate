@@ -36,7 +36,6 @@ public class LargeClass_Class2
 {
     public LargeClass_Class2()
     {
-
     }
 
     public LargeClass Class { get; } = new LargeClass();
@@ -137,6 +136,10 @@ public class LargeClass
 
 public readonly struct LargeReadonlyStruct
 {
+    /*public LargeReadonlyStruct()
+    {// Default constructor is evil.
+    }*/
+
     public LargeReadonlyStruct(ulong x0, ulong x1, ulong x2, ulong x3, ulong x4, ulong x5, ulong x6, ulong x7, ulong x8, ulong x9)
     {
         this.X0 = x0;
