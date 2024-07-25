@@ -10,7 +10,7 @@ public class LargeClass_Struct
 {
     public LargeClass_Struct()
     {
-        this.LargeReadonlyStruct = new LargeReadonlyStruct();
+        this.LargeReadonlyStruct = new LargeReadonlyStruct(0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
     }
 
     public LargeReadonlyStruct LargeReadonlyStruct { get; private set; }
@@ -36,7 +36,6 @@ public class LargeClass_Class2
 {
     public LargeClass_Class2()
     {
-
     }
 
     public LargeClass Class { get; } = new LargeClass();
@@ -137,19 +136,9 @@ public class LargeClass
 
 public readonly struct LargeReadonlyStruct
 {
-    public LargeReadonlyStruct()
-    {
-        this.X0 = 0;
-        this.X1 = 1;
-        this.X2 = 2;
-        this.X3 = 3;
-        this.X4 = 4;
-        this.X5 = 5;
-        this.X6 = 6;
-        this.X7 = 7;
-        this.X8 = 8;
-        this.X9 = 9;
-    }
+    /*public LargeReadonlyStruct()
+    {// Default constructor is evil.
+    }*/
 
     public LargeReadonlyStruct(ulong x0, ulong x1, ulong x2, ulong x3, ulong x4, ulong x5, ulong x6, ulong x7, ulong x8, ulong x9)
     {
