@@ -19,7 +19,7 @@ public class CancellationTokenTest
     public CancellationTokenTest()
     {
         this.cts = new();
-        this.cancellationToken = cts.Token;
+        this.cancellationToken = this.cts.Token;
     }
 
     private async Task<int> TestTask()
