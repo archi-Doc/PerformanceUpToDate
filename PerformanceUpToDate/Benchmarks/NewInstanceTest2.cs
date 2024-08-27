@@ -55,6 +55,10 @@ public class NewInstanceTest2
         => Activator.CreateInstance<SimpleNewClass>();
 
     [Benchmark]
+    public SimpleNewClass ActivatorCreate2()
+        => (SimpleNewClass)Activator.CreateInstance(typeof(SimpleNewClass));
+
+    [Benchmark]
     public NewConstraintClass NewConstraint()
         => this.NewConstraintInternal<NewConstraintClass>();
 
