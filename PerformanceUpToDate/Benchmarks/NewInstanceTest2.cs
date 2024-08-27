@@ -7,7 +7,7 @@ using BenchmarkDotNet.Attributes;
 
 #pragma warning disable SA1649 // File name should match first type name
 
-namespace PerformanceUpToDate.NewInstance2;
+namespace PerformanceUpToDate;
 
 public class SimpleNewClass
 {

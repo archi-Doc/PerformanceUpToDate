@@ -7,9 +7,9 @@ using BenchmarkDotNet.Attributes;
 #pragma warning disable SA1602 // Enumeration items should be documented
 #pragma warning disable SA1649 // File name should match first type name
 
-namespace PerformanceUpToDate.NewInstance;
+namespace PerformanceUpToDate;
 
-public enum TestEnum
+public enum TestEnum2
 {
     One,
     Two,
@@ -59,9 +59,9 @@ public class NewInstanceTest
     }
 
     [Benchmark]
-    public TestEnum NewEnum()
+    public TestEnum2 NewEnum()
     {
-        return default(TestEnum);
+        return default(TestEnum2);
     }
 
     [Benchmark]
