@@ -4,6 +4,7 @@ using System;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using BenchmarkDotNet.Attributes;
+using PerformanceUpToDate.Internal;
 
 #pragma warning disable SA1649 // File name should match first type name
 
@@ -41,6 +42,13 @@ public interface INewClass
 [Config(typeof(BenchmarkConfig))]
 public class NewInstanceTest2
 {
+    private ThreadsafeTypeKeyHashtable<Func<object>> constructors = new();
+
+    public NewInstanceTest2()
+    {
+        this.constructors.TryAdd(typeof(SimpleNewClass), () => new SimpleNewClass());
+    }
+
     [GlobalSetup]
     public void Setup()
     {
@@ -57,6 +65,10 @@ public class NewInstanceTest2
     [Benchmark]
     public SimpleNewClass ActivatorCreate2()
         => (SimpleNewClass)Activator.CreateInstance(typeof(SimpleNewClass));
+
+    [Benchmark]
+    public SimpleNewClass TypeKeyHashtable()
+       => this.constructors.TryGetValue(typeof(SimpleNewClass), out var func) ? (SimpleNewClass)func() : default!;
 
     [Benchmark]
     public NewConstraintClass NewConstraint()
