@@ -2,6 +2,7 @@
 
 using System;
 using BenchmarkDotNet.Attributes;
+using DryIoc;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace PerformanceUpToDate;
@@ -45,6 +46,9 @@ public class DIContainerBenchmark
     private readonly IServiceProvider serviceProvider;
     private readonly IServiceScope serviceScope;
 
+    private readonly Container container;
+    private readonly IResolverContext serviceScope2;
+
     public DIContainerBenchmark()
     {
         var sc = new ServiceCollection();
@@ -54,6 +58,12 @@ public class DIContainerBenchmark
 
         this.serviceProvider = sc.BuildServiceProvider();
         this.serviceScope = this.serviceProvider.CreateScope();
+
+        this.container = new DryIoc.Container();
+        this.container.Register<SimpleTransientClass>(Reuse.Transient);
+        this.container.Register<SimpleScopedClass>(Reuse.Scoped);
+        this.container.Register<SimpleSingletonClass>(Reuse.Singleton);
+        this.serviceScope2 = this.container.OpenScope();
     }
 
     [Benchmark]
@@ -61,15 +71,23 @@ public class DIContainerBenchmark
         => new SimpleTransientClass();
 
     [Benchmark]
-    public SimpleTransientClass Transient()
+    public SimpleTransientClass Transient_Ms()
         => this.serviceProvider.GetRequiredService<SimpleTransientClass>();
 
     [Benchmark]
-    public SimpleScopedClass Scoped()
+    public SimpleTransientClass Transient_Dry()
+        => this.container.Resolve<SimpleTransientClass>();
+
+    [Benchmark]
+    public SimpleScopedClass Scoped_Ms()
         => this.serviceScope.ServiceProvider.GetRequiredService<SimpleScopedClass>();
 
     [Benchmark]
-    public SimpleScopedClass Scoped2()
+    public SimpleScopedClass Scoped_Dry()
+        => this.serviceScope2.Resolve<SimpleScopedClass>();
+
+    [Benchmark]
+    public SimpleScopedClass Scoped2_Ms()
     {
         using (var scope = this.serviceProvider.CreateScope())
         {
@@ -78,6 +96,19 @@ public class DIContainerBenchmark
     }
 
     [Benchmark]
-    public SimpleSingletonClass Singleton()
+    public SimpleScopedClass Scoped2_Dry()
+    {
+        using (var scope = this.container.OpenScope())
+        {
+            return scope.Resolve<SimpleScopedClass>();
+        }
+    }
+
+    [Benchmark]
+    public SimpleSingletonClass Singleton_Ms()
         => this.serviceProvider.GetRequiredService<SimpleSingletonClass>();
+
+    [Benchmark]
+    public SimpleSingletonClass Singleton_Dry()
+        => this.container.Resolve<SimpleSingletonClass>();
 }
