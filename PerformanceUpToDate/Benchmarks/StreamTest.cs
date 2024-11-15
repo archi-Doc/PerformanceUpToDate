@@ -43,7 +43,7 @@ public class StreamTest
     {
         this.memoryStream.Position = 0;
         var buffer = ArrayPool<byte>.Shared.Rent(checked((int)this.memoryStream.Length));
-        this.stream.Read(buffer);
+        this.stream.ReadExactly(buffer);
         var span = buffer.AsSpan();
         ArrayPool<byte>.Shared.Return(buffer);
         return;

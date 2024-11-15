@@ -47,7 +47,7 @@ public class LargeClass_Class3
 
     public LargeClass_Class3()
     {
-        this.Class = pool.Get();
+        this.Class = pool.Rent();
     }
 
     public LargeClass Class { get; }
