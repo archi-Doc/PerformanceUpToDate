@@ -2,7 +2,6 @@
 
 using System;
 using System.Linq.Expressions;
-using System.Reflection;
 using System.Runtime.CompilerServices;
 using BenchmarkDotNet.Attributes;
 using PerformanceUpToDate.Internal;
@@ -64,6 +63,12 @@ public class NewInstanceTest2
     [Benchmark]
     public SimpleNewClass ExpressionTree()
         => this.expressionTree();
+
+    [Benchmark]
+    public SimpleNewClass GetUninitializedObject()
+#pragma warning disable SYSLIB0050 // Type or member is obsolete
+        => (SimpleNewClass)System.Runtime.Serialization.FormatterServices.GetUninitializedObject(typeof(SimpleNewClass));
+#pragma warning restore SYSLIB0050 // Type or member is obsolete
 
     [Benchmark]
     public SimpleNewClass ActivatorCreate()
