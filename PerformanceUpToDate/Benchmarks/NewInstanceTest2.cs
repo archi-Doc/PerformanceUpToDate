@@ -1,6 +1,7 @@
 ﻿// Copyright (c) All contributors. All rights reserved. Licensed under the MIT license.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 using BenchmarkDotNet.Attributes;
@@ -26,11 +27,21 @@ public class RequiredTestStruct
         => (RequiredTestStruct)RuntimeHelpers.GetUninitializedObject(typeof(RequiredTestStruct));
 }
 
+public enum __UnsafeParameter__
+{
+    Constructor,
+}
+
 public class SimpleNewClass
 {
     public SimpleNewClass()
     {
     }
+
+    [SetsRequiredMembers]
+    private SimpleNewClass(__UnsafeParameter__ p) { }
+    public static SimpleNewClass UnsafeConstructor()
+        => new(__UnsafeParameter__.Constructor);
 
     public int X { get; set; } = 49;
 
@@ -84,7 +95,11 @@ public class NewInstanceTest2
         => this.expressionTree();
 
     [Benchmark]
-    public SimpleNewClass GetUninitializedObject()
+    public SimpleNewClass UnsafeConstructor()
+        => SimpleNewClass.UnsafeConstructor();
+
+    [Benchmark]
+    public SimpleNewClass UninitializedObject()
         => SimpleNewClass.UninitializedObject();
 
     [Benchmark]
