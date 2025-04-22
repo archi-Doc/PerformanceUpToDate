@@ -1,6 +1,7 @@
 ﻿// Copyright (c) All contributors. All rights reserved. Licensed under the MIT license.
 
 using System;
+using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using BenchmarkDotNet.Attributes;
@@ -42,11 +43,13 @@ public interface INewClass
 [Config(typeof(BenchmarkConfig))]
 public class NewInstanceTest2
 {
-    private ThreadsafeTypeKeyHashtable<Func<object>> constructors = new();
+    private readonly ThreadsafeTypeKeyHashtable<Func<object>> constructors = new();
+    private readonly Func<SimpleNewClass> expressionTree;
 
     public NewInstanceTest2()
     {
         this.constructors.TryAdd(typeof(SimpleNewClass), () => new SimpleNewClass());
+        this.expressionTree = Expression.Lambda<Func<SimpleNewClass>>(Expression.New(typeof(SimpleNewClass))).Compile();
     }
 
     [GlobalSetup]
@@ -57,6 +60,10 @@ public class NewInstanceTest2
     [Benchmark]
     public SimpleNewClass SimpleNew()
         => new SimpleNewClass();
+
+    [Benchmark]
+    public SimpleNewClass ExpressionTree()
+        => this.expressionTree();
 
     [Benchmark]
     public SimpleNewClass ActivatorCreate()
