@@ -3,6 +3,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using BenchmarkDotNet.Attributes;
 using PerformanceUpToDate.Internal;
@@ -32,7 +33,13 @@ public enum __UnsafeParameter__
     Constructor,
 }
 
-public class SimpleNewClass
+public class BaseClass
+{
+    public BaseClass(int x)
+    {
+    }
+}
+public class SimpleNewClass // : BaseClass
 {
     public SimpleNewClass()
     {
@@ -51,7 +58,7 @@ public class SimpleNewClass
         => (SimpleNewClass)RuntimeHelpers.GetUninitializedObject(typeof(SimpleNewClass));
 }
 
-public class NewConstraintClass : INewClass
+public class NewConstraintClass : INewClass<NewConstraintClass>
 {
     public NewConstraintClass()
     {
@@ -61,12 +68,12 @@ public class NewConstraintClass : INewClass
 
     public string Text { get; set; } = "Test";
 
-    public static INewClass New() => new NewConstraintClass();
+    public static NewConstraintClass New() => new();
 }
 
-public interface INewClass
+public interface INewClass<T>
 {
-    static abstract INewClass New();
+    static abstract T New();
 }
 
 [Config(typeof(BenchmarkConfig))]
@@ -78,6 +85,7 @@ public class NewInstanceTest2
     public NewInstanceTest2()
     {
         this.constructors.TryAdd(typeof(SimpleNewClass), () => new SimpleNewClass());
+        var constructorInfo = typeof(SimpleNewClass).GetConstructor(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance, Type.EmptyTypes);
         this.expressionTree = Expression.Lambda<Func<SimpleNewClass>>(Expression.New(typeof(SimpleNewClass))).Compile();
     }
 
@@ -130,7 +138,7 @@ public class NewInstanceTest2
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private T StaticAbstractInternal<T>()
-        where T : INewClass
+        where T : INewClass<T>
     {
         return (T)T.New();
     }
