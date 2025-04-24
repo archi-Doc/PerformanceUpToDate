@@ -1,6 +1,7 @@
 ﻿// Copyright (c) All contributors. All rights reserved. Licensed under the MIT license.
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -17,6 +18,9 @@ public class IndexOfTest2
     public const char Separator1 = '/';
     public const char Separator2 = '#';
     public const char Separator3 = '+';
+    public const string Separators = "/abcfgijkmnp";
+
+    private readonly SearchValues<char> searchValues = SearchValues.Create(Separators);
 
     public IndexOfTest2()
     {
@@ -50,6 +54,20 @@ public class IndexOfTest2
     {
         var span = Text.AsSpan();
         return span.IndexOfAny(Separator1, Separator2, Separator3);
+    }
+
+    [Benchmark]
+    public int IndexOfAnySpan()
+    {
+        var span = Text.AsSpan();
+        return span.IndexOfAny(Separators);
+    }
+
+    [Benchmark]
+    public int IndexOfAnySearchValue()
+    {
+        var span = Text.AsSpan();
+        return span.IndexOfAny(this.searchValues);
     }
 
     [Benchmark]
