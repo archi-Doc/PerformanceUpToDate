@@ -23,7 +23,7 @@ public class Program
 {
     public static void Main(string[] args)
     {
-        DebugRun<IndexOfTest2>();
+        DebugRun<AsyncLocalTest>();
 
         // var summary = BenchmarkRunner.Run<ByteCopyTest>(); // SwapTest, MemoryAllocationTest, ByteCopyTest
         var switcher = new BenchmarkSwitcher(new[]
