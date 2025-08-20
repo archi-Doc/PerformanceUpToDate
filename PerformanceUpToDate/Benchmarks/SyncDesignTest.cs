@@ -28,6 +28,8 @@ public class SyncDesignTest
 {
     public object SyncObject { get; } = new();
 
+    public Lock LockObject { get; } = new();
+
     public int X;
 
     public int Y;
@@ -67,9 +69,20 @@ public class SyncDesignTest
     }
 
     [Benchmark]
-    public int Lock()
+    public int Lock_Object()
     {
         lock (this.SyncObject)
+        {
+            this.Y = this.X;
+        }
+
+        return this.Y;
+    }
+
+    [Benchmark]
+    public int Lock_EnterScope()
+    {
+        using (this.LockObject.EnterScope())
         {
             this.Y = this.X;
         }
@@ -109,6 +122,13 @@ public class SyncDesignTest
     public int InterlockedExchange()
     {
         var y = Interlocked.Exchange(ref this.Y, this.X);
+        return y;
+    }
+
+    [Benchmark]
+    public int InterlockedCompareExchange()
+    {
+        var y = Interlocked.CompareExchange(ref this.Y, this.X, 100);
         return y;
     }
 
