@@ -70,17 +70,21 @@ Copy: 1 ns
 
 Volatile.Write: 1.5 ns
 
-Interlocked.Exchange: 5 ns
+Interlocked.Exchange: 3 ns
 
-Interlocked.Increment: 5 ns
+Interlocked.Increment: 3 ns
 
-lock: 16 ns
+Interlocked.CompareExchange: 5 ns
+
+lock(object): 12 ns
+
+Lock.EnterScope: 11 ns
 
 ConcurrentQueue.TryDequeue: 10 ns (approx.)
 
-ConcurrentQueue Enqueue/Dequeue: 16 ns
+ConcurrentQueue Enqueue/Dequeue: 8 ns
 
-ConcurrentStack Push/Pop: 20 ns
+ConcurrentStack Push/Pop: 14 ns
 
 
 

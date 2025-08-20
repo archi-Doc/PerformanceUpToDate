@@ -29,7 +29,9 @@ public class AsyncLocalTest
     public AsyncLocalTest()
     {
         this.AsyncLocal1 = new();
+        var c = this.AsyncLocal1.Value;
         this.AsyncLocal1.Value = new();
+        c = this.AsyncLocal1.Value;
     }
 
     [GlobalSetup]

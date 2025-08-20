@@ -1,6 +1,8 @@
 ﻿// Copyright (c) All contributors. All rights reserved. Licensed under the MIT license.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using BenchmarkDotNet.Attributes;
@@ -10,18 +12,53 @@ using PerformanceUpToDate.Internal;
 
 namespace PerformanceUpToDate;
 
-public class SimpleNewClass
+public class RequiredTestClass
+{
+    public required int X { get; set; } = 49;
+
+    public static RequiredTestClass UninitializedObject()
+        => (RequiredTestClass)RuntimeHelpers.GetUninitializedObject(typeof(RequiredTestClass));
+}
+
+public class RequiredTestStruct
+{
+    public required int X { get; set; } = 49;
+
+    public static RequiredTestStruct UninitializedObject()
+        => (RequiredTestStruct)RuntimeHelpers.GetUninitializedObject(typeof(RequiredTestStruct));
+}
+
+public enum __UnsafeParameter__
+{
+    Constructor,
+}
+
+public class BaseClass
+{
+    public BaseClass(int x)
+    {
+    }
+}
+public class SimpleNewClass // : BaseClass
 {
     public SimpleNewClass()
     {
     }
 
+    [SetsRequiredMembers]
+    private SimpleNewClass(__UnsafeParameter__ p) { }
+    public static SimpleNewClass UnsafeConstructor()
+        => new(__UnsafeParameter__.Constructor);
+
     public int X { get; set; } = 49;
 
     public string Text { get; set; } = "Test";
+
+    public static SimpleNewClass UninitializedObject()
+        => (SimpleNewClass)RuntimeHelpers.GetUninitializedObject(typeof(SimpleNewClass));
 }
 
-public class NewConstraintClass : INewClass
+public class NewConstraintClass : INewClass<NewConstraintClass>
 {
     public NewConstraintClass()
     {
@@ -31,22 +68,25 @@ public class NewConstraintClass : INewClass
 
     public string Text { get; set; } = "Test";
 
-    public static INewClass New() => new NewConstraintClass();
+    public static NewConstraintClass New() => new();
 }
 
-public interface INewClass
+public interface INewClass<T>
 {
-    static abstract INewClass New();
+    static abstract T New();
 }
 
 [Config(typeof(BenchmarkConfig))]
 public class NewInstanceTest2
 {
-    private ThreadsafeTypeKeyHashtable<Func<object>> constructors = new();
+    private readonly ThreadsafeTypeKeyHashtable<Func<object>> constructors = new();
+    private readonly Func<SimpleNewClass> expressionTree;
 
     public NewInstanceTest2()
     {
         this.constructors.TryAdd(typeof(SimpleNewClass), () => new SimpleNewClass());
+        var constructorInfo = typeof(SimpleNewClass).GetConstructor(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance, Type.EmptyTypes);
+        this.expressionTree = Expression.Lambda<Func<SimpleNewClass>>(Expression.New(typeof(SimpleNewClass))).Compile();
     }
 
     [GlobalSetup]
@@ -57,6 +97,18 @@ public class NewInstanceTest2
     [Benchmark]
     public SimpleNewClass SimpleNew()
         => new SimpleNewClass();
+
+    [Benchmark]
+    public SimpleNewClass ExpressionTree()
+        => this.expressionTree();
+
+    [Benchmark]
+    public SimpleNewClass UnsafeConstructor()
+        => SimpleNewClass.UnsafeConstructor();
+
+    [Benchmark]
+    public SimpleNewClass UninitializedObject()
+        => SimpleNewClass.UninitializedObject();
 
     [Benchmark]
     public SimpleNewClass ActivatorCreate()
@@ -86,7 +138,7 @@ public class NewInstanceTest2
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private T StaticAbstractInternal<T>()
-        where T : INewClass
+        where T : INewClass<T>
     {
         return (T)T.New();
     }
