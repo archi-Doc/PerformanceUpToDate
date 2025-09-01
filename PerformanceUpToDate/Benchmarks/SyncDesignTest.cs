@@ -8,6 +8,13 @@ using BenchmarkDotNet.Attributes;
 
 namespace PerformanceUpToDate;
 
+public enum SyncState : int
+{
+    Deleted = -1,
+    Unprotected = 0,
+    Protected = 1,
+}
+
 public interface ISyncDesignClass
 {
     int X { get; set; }
@@ -36,6 +43,10 @@ public class SyncDesignTest
 
     public volatile int V;
 
+    public SyncState X2;
+
+    public SyncState Y2;
+
     public SyncDesignClass Class = new();
 
     public ISyncDesignClass Interface = new SyncDesignClass();
@@ -50,6 +61,7 @@ public class SyncDesignTest
 
     public SyncDesignTest()
     {
+        this.X2 = SyncState.Protected;
     }
 
     [GlobalSetup]
@@ -61,7 +73,7 @@ public class SyncDesignTest
         }*/
     }
 
-    [Benchmark]
+    // [Benchmark]
     public int Copy()
     {
         this.Y = this.X;
@@ -97,14 +109,14 @@ public class SyncDesignTest
         return this.Y;
     }
 
-    [Benchmark]
+    // [Benchmark]
     public int RawIncrement()
     {
         this.X++;
         return this.X;
     }
 
-    [Benchmark]
+    // [Benchmark]
     public int VolatileIncrement()
     {
         this.V++;
@@ -133,6 +145,13 @@ public class SyncDesignTest
     }
 
     [Benchmark]
+    public SyncState InterlockedCompareExchange2()
+    {
+        var y = Interlocked.CompareExchange(ref this.Y2, this.X2, SyncState.Unprotected);
+        return y;
+    }
+
+    /*[Benchmark]
     public int ClassIncrement()
     {
         return this.Class.X++;
@@ -190,7 +209,7 @@ public class SyncDesignTest
         {
             return 0;
         }
-    }
+    }*/
 
     /*[IterationSetup(Target = "Concurrent_TryDequeue2")]
     public void SetupCuncurrent()
