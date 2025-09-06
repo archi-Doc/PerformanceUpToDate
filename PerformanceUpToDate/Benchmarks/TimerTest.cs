@@ -30,11 +30,11 @@ public class TimerTest
 
     [Benchmark]
     public long GetTimestamp()
-    {
+    {// 15 ns
         return Stopwatch.GetTimestamp();
     }
 
-    [Benchmark]
+    // [Benchmark]
     public void TimeBeginEndPeriod()
     {
         try
