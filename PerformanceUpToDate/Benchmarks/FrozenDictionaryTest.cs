@@ -1,5 +1,6 @@
 ﻿// Copyright (c) All contributors. All rights reserved. Licensed under the MIT license.
 
+using System.Collections.Concurrent;
 using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,12 +16,14 @@ public class FrozenDictionaryTest
     private readonly Dictionary<int, int> dictionary;
     private readonly FrozenDictionary<int, int> frozenDictionary;
     private readonly UnorderedMap<int, int> map;
+    private readonly ConcurrentDictionary<int, int> concurrentDictionary;
 
     public FrozenDictionaryTest()
     {
         this.dictionary = this.CreateDictionary();
         this.frozenDictionary = this.CreateFrozenDictionary();
         this.map = this.CreateUnorderedMap();
+        this.concurrentDictionary = this.CreateConcurrentDictionary();
     }
 
     [Benchmark]
@@ -45,6 +48,18 @@ public class FrozenDictionaryTest
         }
 
         return map;
+    }
+
+    [Benchmark]
+    public ConcurrentDictionary<int, int> CreateConcurrentDictionary()
+    {
+        var concurrentDictionary = new ConcurrentDictionary<int, int>();
+        foreach (var x in this.array)
+        {
+            concurrentDictionary.TryAdd(x, x);
+        }
+
+        return concurrentDictionary;
     }
 
     [Benchmark]
@@ -78,6 +93,18 @@ public class FrozenDictionaryTest
         foreach (var x in this.array)
         {
             sum += this.map[x];
+        }
+
+        return sum;
+    }
+
+    [Benchmark]
+    public int FindConcurrentDictionary()
+    {
+        var sum = 0;
+        foreach (var x in this.array)
+        {
+            sum += this.concurrentDictionary[x];
         }
 
         return sum;
