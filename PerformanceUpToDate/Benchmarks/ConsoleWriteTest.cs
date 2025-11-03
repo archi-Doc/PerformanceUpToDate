@@ -20,7 +20,7 @@ public class ConsoleWriteTest
         return Console.KeyAvailable;
     }
 
-    /*[Benchmark]
+    [Benchmark]
     public void String()
     {
         Console.Write(this.testString);
@@ -34,7 +34,7 @@ public class ConsoleWriteTest
         {
             Console.CursorLeft--;
         }
-    }*/
+    }
 
     /*[Benchmark]
     public void NewString()
