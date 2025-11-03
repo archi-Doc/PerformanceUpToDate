@@ -15,6 +15,7 @@ public class SumSbyteTest
     // private readonly sbyte[] data = [0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0,];
 
     private readonly sbyte[] data = [0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1,];
+    private readonly byte[] data2;
 
     public SumSbyteTest()
     {
@@ -22,6 +23,10 @@ public class SumSbyteTest
         var sum = this.TestSimple();
         var sum2 = this.TestAvx2();
         sum2 = this.TestAvx2b();
+
+        this.data2 = MemoryMarshal.AsBytes(this.data.AsSpan()).ToArray();
+        var sum3 = this.TestSse2();
+        var sum4 = this.TestSimple2();
     }
 
     [Benchmark]
@@ -35,6 +40,39 @@ public class SumSbyteTest
         }
 
         return sum;
+    }
+
+    [Benchmark]
+    public uint TestSimple2()
+    {
+        var span = this.data2.AsSpan();
+        uint sum = 0;
+        for (int i = 0; i < span.Length; i++)
+        {
+            sum += span[i];
+        }
+
+        return sum;
+    }
+
+    [Benchmark]
+    public uint TestSimple3()
+    {// Slow
+        ref byte p = ref MemoryMarshal.GetReference(this.data2);
+        int len = this.data2.Length;
+        uint sum = 0;
+        for (int i = 0; i < len; i++)
+        {
+            sum += Unsafe.Add(ref p, i);
+        }
+
+        return sum;
+    }
+
+    [Benchmark]
+    public ulong TestSse2()
+    {
+        return SumSse2(this.data2.AsSpan());
     }
 
     // [Benchmark]
@@ -191,5 +229,38 @@ public class SumSbyteTest
         }
 
         return sum;
+    }
+
+    private static unsafe ulong SumSse2(ReadOnlySpan<byte> data)
+    {
+        ulong acc = 0;
+        ref byte p = ref MemoryMarshal.GetReference(data);
+        int len = data.Length;
+        int i = 0;
+
+        if (Sse2.IsSupported)
+        {
+            for (; i + 32 <= len; i += 32)
+            {
+                var v256 = Unsafe.ReadUnaligned<Vector256<byte>>(ref Unsafe.Add(ref p, i));
+                var sadLo = Sse2.SumAbsoluteDifferences(v256.GetLower(), Vector128<byte>.Zero).AsUInt64();
+                var sadHi = Sse2.SumAbsoluteDifferences(v256.GetUpper(), Vector128<byte>.Zero).AsUInt64();
+                acc += sadLo.GetElement(0) + sadLo.GetElement(1) + sadHi.GetElement(0) + sadHi.GetElement(1);
+            }
+
+            for (; i + 16 <= len; i += 16)
+            {
+                var v128 = Unsafe.ReadUnaligned<Vector128<byte>>(ref Unsafe.Add(ref p, i));
+                var sad = Sse2.SumAbsoluteDifferences(v128, Vector128<byte>.Zero).AsUInt64();
+                acc += sad.GetElement(0) + sad.GetElement(1);
+            }
+        }
+
+        for (; i < len; i++)
+        {
+            acc += Unsafe.Add(ref p, i);
+        }
+
+        return acc;
     }
 }
