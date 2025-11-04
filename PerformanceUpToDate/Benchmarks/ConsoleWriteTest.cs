@@ -21,6 +21,32 @@ public class ConsoleWriteTest
     }
 
     [Benchmark]
+    public void HideAndShowCursor()
+    {
+        Console.Out.Write("\x1b[?25l");
+        Console.Out.Write("\x1b[?25h");
+    }
+
+    [Benchmark]
+    public void HideAndShowCursor2()
+    {
+        Console.Out.Write("\x1b[?25l\u001b[?25h");
+    }
+
+    [Benchmark]
+    public void SaveAndRestoreCursor()
+    {
+        Console.Out.Write("\x1b[s");
+        Console.Out.Write("\x1b[u");
+    }
+
+    [Benchmark]
+    public void SaveAndRestoreCursor2()
+    {
+        Console.Out.Write("\x1b[s\x1b[u");
+    }
+
+    /*[Benchmark]
     public void String()
     {
         Console.Write(this.testString);
@@ -34,7 +60,7 @@ public class ConsoleWriteTest
         {
             Console.CursorLeft--;
         }
-    }
+    }*/
 
     /*[Benchmark]
     public void NewString()
