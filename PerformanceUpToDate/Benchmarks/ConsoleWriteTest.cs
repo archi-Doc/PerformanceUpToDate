@@ -27,7 +27,31 @@ public class ConsoleWriteTest
         Console.Out.Write("\x1b[?25h");
     }*/
 
-    // [Benchmark]
+    [Benchmark]
+    public void MoveCursor()
+    {
+        try
+        {
+            Console.SetCursorPosition(1, 1);
+        }
+        catch
+        {
+        }
+    }
+
+    [Benchmark]
+    public void MoveCursor2()
+    {
+        try
+        {
+            Console.Write("\e[2;2H");
+        }
+        catch
+        {
+        }
+    }
+
+    /*[Benchmark]
     public void HideAndShowCursor2()
     {
         try
@@ -61,7 +85,7 @@ public class ConsoleWriteTest
         catch
         {
         }
-    }
+    }*/
 
     /*[Benchmark]
     public void SaveAndRestoreCursor()
