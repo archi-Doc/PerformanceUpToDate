@@ -14,7 +14,7 @@ public class ConsoleWriteTest
     {
     }
 
-    [Benchmark]
+    /*[Benchmark]
     public bool KeyAvailable()
     {
         return Console.KeyAvailable;
@@ -25,15 +25,45 @@ public class ConsoleWriteTest
     {
         Console.Out.Write("\x1b[?25l");
         Console.Out.Write("\x1b[?25h");
-    }
+    }*/
 
-    [Benchmark]
+    // [Benchmark]
     public void HideAndShowCursor2()
     {
-        Console.Out.Write("\x1b[?25l\u001b[?25h");
+        try
+        {
+            Console.Out.Write("\x1b[?25l\x1b[?25h");
+        }
+        catch
+        {
+        }
     }
 
     [Benchmark]
+    public void ShowCursor()
+    {
+        try
+        {
+            Console.Out.Write("ABC \x1b[?25h");
+        }
+        catch
+        {
+        }
+    }
+
+    [Benchmark]
+    public void ShowCursor2()
+    {
+        try
+        {
+            Console.CursorVisible = true;
+        }
+        catch
+        {
+        }
+    }
+
+    /*[Benchmark]
     public void SaveAndRestoreCursor()
     {
         Console.Out.Write("\x1b[s");
@@ -44,7 +74,7 @@ public class ConsoleWriteTest
     public void SaveAndRestoreCursor2()
     {
         Console.Out.Write("\x1b[s\x1b[u");
-    }
+    }*/
 
     /*[Benchmark]
     public void String()
