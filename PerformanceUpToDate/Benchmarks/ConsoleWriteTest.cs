@@ -8,7 +8,7 @@ namespace PerformanceUpToDate;
 [Config(typeof(BenchmarkConfig))]
 public class ConsoleWriteTest
 {
-    private readonly string testString = "Hello World!";
+    // private readonly string testString = "Hello World!";
 
     public ConsoleWriteTest()
     {

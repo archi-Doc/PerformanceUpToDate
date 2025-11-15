@@ -17,7 +17,7 @@ public class ConcurrentTest
     private ConcurrentDictionary<uint, uint> concurrentDictionary = new();
     private Dictionary<uint, uint> dictionary = new();
     private UnorderedMap<uint, uint> unorderedMap = new();
-    private UInt32Hashtable<uint> hashtable = new();
+    private Arc.Collections.UInt32Hashtable<uint> hashtable = new();
 
     public ConcurrentTest()
     {
