@@ -14,20 +14,20 @@ public class ConsoleWriteTest
     {
     }
 
-    /*[Benchmark]
+    [Benchmark]
     public bool KeyAvailable()
     {
         return Console.KeyAvailable;
     }
 
-    [Benchmark]
+    /*[Benchmark]
     public void HideAndShowCursor()
     {
         Console.Out.Write("\x1b[?25l");
         Console.Out.Write("\x1b[?25h");
     }*/
 
-    [Benchmark]
+    /*[Benchmark]
     public void MoveCursor()
     {
         try
@@ -49,7 +49,7 @@ public class ConsoleWriteTest
         catch
         {
         }
-    }
+    }*/
 
     /*[Benchmark]
     public void HideAndShowCursor2()
