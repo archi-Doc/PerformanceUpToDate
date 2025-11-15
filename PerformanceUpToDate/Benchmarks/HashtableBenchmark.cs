@@ -12,7 +12,7 @@ public class HashtableBenchmark
     private readonly uint[] array = [1, 0x74b416b3, 0x4a3ed64a, 0x700214c2, 0xb10baf28, 0x65fd6e51, 0x93ac2ff2, 0x3cc6fbed];
     private readonly uint a = 0x74b416b3;
 
-    private readonly Arc.Crypto.UInt32Hashtable<uint> hashtable = new();
+    private readonly Arc.Collections.UInt32Hashtable<uint> hashtable = new();
     private readonly Dictionary<uint, uint> dictionary = new();
     private readonly ConcurrentDictionary<uint, uint> concurrentDictionary = new();
 
@@ -62,9 +62,9 @@ public class HashtableBenchmark
     }
 
     [Benchmark]
-    public Arc.Crypto.UInt32Hashtable<uint> CreateHashtable()
+    public Arc.Collections.UInt32Hashtable<uint> CreateHashtable()
     {
-        var hashtable = new Arc.Crypto.UInt32Hashtable<uint>();
+        var hashtable = new Arc.Collections.UInt32Hashtable<uint>();
         foreach (var x in array)
         {
             hashtable.TryAdd(x, x);

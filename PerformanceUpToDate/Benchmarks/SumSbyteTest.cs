@@ -1,0 +1,266 @@
+﻿// Copyright (c) All contributors. All rights reserved. Licensed under the MIT license.
+
+using System;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using System.Runtime.Intrinsics;
+using System.Runtime.Intrinsics.X86;
+using BenchmarkDotNet.Attributes;
+
+namespace PerformanceUpToDate;
+
+[Config(typeof(BenchmarkConfig))]
+public class SumSbyteTest
+{
+    // private readonly sbyte[] data = [0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0,];
+
+    private readonly sbyte[] data = [0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1, -1, 1, 0, 0, 1,];
+    private readonly byte[] data2;
+
+    public SumSbyteTest()
+    {
+        var length = this.data.Length;
+        var sum = this.TestSimple();
+        var sum2 = this.TestAvx2();
+        sum2 = this.TestAvx2b();
+
+        this.data2 = MemoryMarshal.AsBytes(this.data.AsSpan()).ToArray();
+        var sum3 = this.TestSse2();
+        var sum4 = this.TestSimple2();
+    }
+
+    [Benchmark]
+    public int TestSimple()
+    {
+        var span = this.data.AsSpan();
+        int sum = 0;
+        for (int i = 0; i < span.Length; i++)
+        {
+            sum += span[i];
+        }
+
+        return sum;
+    }
+
+    [Benchmark]
+    public uint TestSimple2()
+    {
+        var span = this.data2.AsSpan();
+        uint sum = 0;
+        for (int i = 0; i < span.Length; i++)
+        {
+            sum += span[i];
+        }
+
+        return sum;
+    }
+
+    [Benchmark]
+    public uint TestSimple3()
+    {// Slow
+        ref byte p = ref MemoryMarshal.GetReference(this.data2);
+        int len = this.data2.Length;
+        uint sum = 0;
+        for (int i = 0; i < len; i++)
+        {
+            sum += Unsafe.Add(ref p, i);
+        }
+
+        return sum;
+    }
+
+    [Benchmark]
+    public ulong TestSse2()
+    {
+        return SumSse2(this.data2.AsSpan());
+    }
+
+    // [Benchmark]
+    public int TestUnrolled()
+    {
+        return SumUnrolled(this.data.AsSpan());
+    }
+
+    // [Benchmark]
+    public long TestUnrolled2()
+    {
+        return SumUnrolled2(this.data.AsSpan());
+    }
+
+    [Benchmark]
+    public long TestAvx2()
+    {
+        return SumAvx2(this.data.AsSpan());
+    }
+
+    [Benchmark]
+    public int TestAvx2b()
+    {
+        return SumAvx2b(this.data.AsSpan());
+    }
+
+    public static int SumUnrolled(ReadOnlySpan<sbyte> span)
+    {
+        var sum = 0;
+        var i = 0;
+        for (; i <= span.Length - 8; i += 8)
+        {
+            sum += span[i];
+            sum += span[i + 1];
+            sum += span[i + 2];
+            sum += span[i + 3];
+            sum += span[i + 4];
+            sum += span[i + 5];
+            sum += span[i + 6];
+            sum += span[i + 7];
+        }
+
+        for (; i < span.Length; i++)
+        {
+            sum += span[i];
+        }
+
+        return sum;
+    }
+
+    public static long SumUnrolled2(ReadOnlySpan<sbyte> data)
+    {
+        long sum = 0;
+        var i = 0;
+        for (; i <= data.Length - 8; i += 8)
+        {
+            sum += data[i];
+            sum += data[i + 1];
+            sum += data[i + 2];
+            sum += data[i + 3];
+            sum += data[i + 4];
+            sum += data[i + 5];
+            sum += data[i + 6];
+            sum += data[i + 7];
+        }
+
+        for (; i < data.Length; i++)
+        {
+            sum += data[i];
+        }
+
+        return sum;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static unsafe long SumAvx2(ReadOnlySpan<sbyte> span)
+    {
+        long sum = 0;
+        int i = 0;
+
+        if (span.Length >= 32)
+        {
+            var accumulator = Vector256<int>.Zero;
+
+            for (; i <= span.Length - 32; i += 32)
+            {
+                var bytes = Avx2.LoadVector256((sbyte*)Unsafe.AsPointer(ref MemoryMarshal.GetReference(span.Slice(i))));
+
+                var low16 = Avx2.ConvertToVector256Int16(bytes.GetLower());
+                var high16 = Avx2.ConvertToVector256Int16(bytes.GetUpper());
+
+                var low32_1 = Avx2.ConvertToVector256Int32(low16.GetLower());
+                var low32_2 = Avx2.ConvertToVector256Int32(low16.GetUpper());
+                var high32_1 = Avx2.ConvertToVector256Int32(high16.GetLower());
+                var high32_2 = Avx2.ConvertToVector256Int32(high16.GetUpper());
+
+                accumulator = Avx2.Add(accumulator, low32_1);
+                accumulator = Avx2.Add(accumulator, low32_2);
+                accumulator = Avx2.Add(accumulator, high32_1);
+                accumulator = Avx2.Add(accumulator, high32_2);
+            }
+
+            var acc128 = Sse2.Add(accumulator.GetLower(), accumulator.GetUpper());
+            acc128 = Sse2.Add(acc128, Sse2.Shuffle(acc128, 0b_11_10_11_10));
+            acc128 = Sse2.Add(acc128, Sse2.Shuffle(acc128, 0b_01_01_01_01));
+            sum = Sse2.ConvertToInt32(acc128);
+        }
+
+        for (; i < span.Length; i++)
+        {
+            sum += span[i];
+        }
+
+        return sum;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static unsafe int SumAvx2b(ReadOnlySpan<sbyte> span)
+    {
+        int sum = 0;
+        int i = 0;
+
+        if (Avx2.IsSupported && span.Length >= 32)
+        {
+            var accumulator = Vector256<int>.Zero;
+
+            for (; i <= span.Length - 32; i += 32)
+            {
+                var bytes = Avx2.LoadVector256((sbyte*)Unsafe.AsPointer(ref MemoryMarshal.GetReference(span.Slice(i))));
+
+                var low16 = Avx2.ConvertToVector256Int16(bytes.GetLower());
+                var high16 = Avx2.ConvertToVector256Int16(bytes.GetUpper());
+
+                var low32_1 = Avx2.ConvertToVector256Int32(low16.GetLower());
+                var low32_2 = Avx2.ConvertToVector256Int32(low16.GetUpper());
+                var high32_1 = Avx2.ConvertToVector256Int32(high16.GetLower());
+                var high32_2 = Avx2.ConvertToVector256Int32(high16.GetUpper());
+
+                accumulator = Avx2.Add(accumulator, low32_1);
+                accumulator = Avx2.Add(accumulator, low32_2);
+                accumulator = Avx2.Add(accumulator, high32_1);
+                accumulator = Avx2.Add(accumulator, high32_2);
+            }
+
+            var x = Avx2.HorizontalAdd(accumulator, accumulator);
+            x = Avx2.HorizontalAdd(x, x);
+            var sum128 = Sse2.Add(x.GetLower(), x.GetUpper());
+            sum = Sse2.ConvertToInt32(sum128);
+        }
+
+        for (; i < span.Length; i++)
+        {
+            sum += span[i];
+        }
+
+        return sum;
+    }
+
+    private static unsafe ulong SumSse2(ReadOnlySpan<byte> data)
+    {
+        ulong acc = 0;
+        ref byte p = ref MemoryMarshal.GetReference(data);
+        int len = data.Length;
+        int i = 0;
+
+        if (Sse2.IsSupported)
+        {
+            for (; i + 32 <= len; i += 32)
+            {
+                var v256 = Unsafe.ReadUnaligned<Vector256<byte>>(ref Unsafe.Add(ref p, i));
+                var sadLo = Sse2.SumAbsoluteDifferences(v256.GetLower(), Vector128<byte>.Zero).AsUInt64();
+                var sadHi = Sse2.SumAbsoluteDifferences(v256.GetUpper(), Vector128<byte>.Zero).AsUInt64();
+                acc += sadLo.GetElement(0) + sadLo.GetElement(1) + sadHi.GetElement(0) + sadHi.GetElement(1);
+            }
+
+            for (; i + 16 <= len; i += 16)
+            {
+                var v128 = Unsafe.ReadUnaligned<Vector128<byte>>(ref Unsafe.Add(ref p, i));
+                var sad = Sse2.SumAbsoluteDifferences(v128, Vector128<byte>.Zero).AsUInt64();
+                acc += sad.GetElement(0) + sad.GetElement(1);
+            }
+        }
+
+        for (; i < len; i++)
+        {
+            acc += Unsafe.Add(ref p, i);
+        }
+
+        return acc;
+    }
+}
