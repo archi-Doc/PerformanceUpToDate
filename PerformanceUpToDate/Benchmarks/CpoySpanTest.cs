@@ -75,7 +75,7 @@ public class CpoySpanTest
     {
         Span<char> span = stackalloc char[Length];
         this.EraseLineAndNewLine.AsSpan().CopyTo(span);
-        return span.Length; ;
+        return span.Length;
     }
 
     [Benchmark]
@@ -84,6 +84,6 @@ public class CpoySpanTest
     {
         Span<char> span = stackalloc char[Length];
         EraseLineAndNewLineSpan2.CopyTo(span);
-        return span.Length; ;
+        return span.Length;
     }
 }
