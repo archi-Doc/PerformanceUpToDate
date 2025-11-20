@@ -20,6 +20,8 @@ public class CpoySpanTest
 
     public ReadOnlySpan<char> EraseLineAndNewLineSpan => Environment.NewLine == "\r\n" ? "\u001b[K\r\n" : "\u001b[K\n";
 
+    public static ReadOnlySpan<char> EraseLineAndNewLineSpan2 => Environment.NewLine == "\r\n" ? "\u001b[K\r\n" : "\u001b[K\n";
+
     public char[] EraseLineAndNewLine { get; }
 
     public CpoySpanTest()
@@ -73,6 +75,15 @@ public class CpoySpanTest
     {
         Span<char> span = stackalloc char[Length];
         this.EraseLineAndNewLine.AsSpan().CopyTo(span);
+        return span.Length; ;
+    }
+
+    [Benchmark]
+    [SkipLocalsInit]
+    public int CommonToSpan3()
+    {
+        Span<char> span = stackalloc char[Length];
+        EraseLineAndNewLineSpan2.CopyTo(span);
         return span.Length; ;
     }
 }
