@@ -20,6 +20,24 @@ public class ConsoleWriteTest
         return Console.KeyAvailable;
     }
 
+    [Benchmark]
+    public int CursorTop()
+    {
+        return Console.CursorTop;
+    }
+
+    [Benchmark]
+    public int WindowWidth()
+    {
+        return Console.WindowWidth;
+    }
+
+    [Benchmark]
+    public int WindowWidthAndHeight()
+    {
+        return Console.WindowWidth + Console.WindowHeight;
+    }
+
     /*[Benchmark]
     public void HideAndShowCursor()
     {
