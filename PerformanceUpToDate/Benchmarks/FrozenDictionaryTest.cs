@@ -1,5 +1,6 @@
 ﻿// Copyright (c) All contributors. All rights reserved. Licensed under the MIT license.
 
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Frozen;
 using System.Collections.Generic;
@@ -60,6 +61,23 @@ public class FrozenDictionaryTest
         }
 
         return concurrentDictionary;
+    }
+
+    [Benchmark]
+    public int FindArray()
+    {
+        var span = this.array.AsSpan();
+        var sum = 0;
+        foreach (var x in this.array)
+        {
+            var idx = span.IndexOf(x);
+            if (idx >= 0)
+            {
+                sum += span[idx];
+            }
+        }
+
+        return sum;
     }
 
     [Benchmark]
