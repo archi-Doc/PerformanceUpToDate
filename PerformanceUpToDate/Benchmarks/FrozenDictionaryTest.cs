@@ -18,6 +18,7 @@ public class FrozenDictionaryTest
     private readonly FrozenDictionary<int, int> frozenDictionary;
     private readonly UnorderedMap<int, int> map;
     private readonly ConcurrentDictionary<int, int> concurrentDictionary;
+    private readonly Int32Hashtable<int> int32Hashtable;
 
     public FrozenDictionaryTest()
     {
@@ -25,6 +26,7 @@ public class FrozenDictionaryTest
         this.frozenDictionary = this.CreateFrozenDictionary();
         this.map = this.CreateUnorderedMap();
         this.concurrentDictionary = this.CreateConcurrentDictionary();
+        this.int32Hashtable = this.CreateInt32Hashtable();
     }
 
     [Benchmark]
@@ -61,6 +63,18 @@ public class FrozenDictionaryTest
         }
 
         return concurrentDictionary;
+    }
+
+    [Benchmark]
+    public Int32Hashtable<int> CreateInt32Hashtable()
+    {
+        var hashtable = new Int32Hashtable<int>();
+        foreach (var x in this.array)
+        {
+            hashtable.TryAdd(x, x);
+        }
+
+        return hashtable;
     }
 
     [Benchmark]
@@ -123,6 +137,21 @@ public class FrozenDictionaryTest
         foreach (var x in this.array)
         {
             sum += this.concurrentDictionary[x];
+        }
+
+        return sum;
+    }
+
+    [Benchmark]
+    public int FindInt32Hashtable()
+    {
+        var sum = 0;
+        foreach (var x in this.array)
+        {
+            if (this.int32Hashtable.TryGetValue(x, out var v))
+            {
+                sum += v;
+            }
         }
 
         return sum;
