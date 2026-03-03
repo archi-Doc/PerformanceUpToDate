@@ -2,6 +2,7 @@
 
 using Arc.Crypto;
 using BenchmarkDotNet.Attributes;
+using PerformanceUpToDate.Internal;
 
 namespace PerformanceUpToDate;
 
@@ -9,6 +10,8 @@ namespace PerformanceUpToDate;
 public class IdCacheTest
 {
     public const string Name = "PerformanceUpToDate.IdCacheTest";
+
+    private readonly ThreadsafeTypeKeyHashtable<uint> typeToTypeIdentifier = new();
 
     public IdCacheTest()
     {
@@ -25,6 +28,10 @@ public class IdCacheTest
     [Benchmark]
     public uint IdCache_64()
         => IdCache<IdCacheTest>.Id;
+
+    [Benchmark]
+    public uint TypeKeyHashtable()
+        => this.typeToTypeIdentifier.GetOrAdd(typeof(IdCacheTest), x => (uint)FarmHash.Hash64(x.FullName ?? string.Empty));
 
     private static class IdCache<T>
     {
