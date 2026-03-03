@@ -7,7 +7,7 @@ using BenchmarkDotNet.Attributes;
 namespace PerformanceUpToDate;
 
 [Config(typeof(BenchmarkConfig))]
-public class CpoySpanTest
+public class CopySpanTest
 {
     private const int Length = 20;
     private const string EraseLineAndLfString = "\u001b[K\n";
@@ -24,7 +24,7 @@ public class CpoySpanTest
 
     public char[] EraseLineAndNewLine { get; }
 
-    public CpoySpanTest()
+    public CopySpanTest()
     {
         if (Environment.NewLine == "\r\n")
         {
