@@ -10,6 +10,19 @@ using BenchmarkDotNet.Attributes;
 
 namespace PerformanceUpToDate;
 
+public readonly record struct KeyValueStruct
+{
+    public readonly int Key;
+
+    public readonly FrozenDictionaryTest? Value;
+
+    public KeyValueStruct(int key, FrozenDictionaryTest? value)
+    {
+        this.Key = key;
+        this.Value = value;
+    }
+}
+
 [Config(typeof(BenchmarkConfig))]
 public class FrozenDictionaryTest
 {
@@ -19,6 +32,8 @@ public class FrozenDictionaryTest
     private readonly UnorderedMap<int, int> map;
     private readonly ConcurrentDictionary<int, int> concurrentDictionary;
     private readonly Int32Hashtable<int> int32Hashtable;
+    private readonly (int, int)[] array2;
+    private readonly KeyValueStruct[] keyValueArray;
 
     public FrozenDictionaryTest()
     {
@@ -27,6 +42,8 @@ public class FrozenDictionaryTest
         this.map = this.CreateUnorderedMap();
         this.concurrentDictionary = this.CreateConcurrentDictionary();
         this.int32Hashtable = this.CreateInt32Hashtable();
+        this.array2 = this.CreateIntArray();
+        this.keyValueArray = this.CreateKeyValueArray();
     }
 
     [Benchmark]
@@ -78,6 +95,30 @@ public class FrozenDictionaryTest
     }
 
     [Benchmark]
+    public (int, int)[] CreateIntArray()
+    {
+        var array2 = new (int, int)[this.array.Length];
+        for (var i = 0; i < this.array.Length; i++)
+        {
+            array2[i] = (this.array[i], this.array[i]);
+        }
+
+        return array2;
+    }
+
+    [Benchmark]
+    public KeyValueStruct[] CreateKeyValueArray()
+    {
+        var array = new KeyValueStruct[this.array.Length];
+        for (var i = 0; i < this.array.Length; i++)
+        {
+            array[i] = new(this.array[i], default);
+        }
+
+        return array;
+    }
+
+    [Benchmark]
     public int FindArray()
     {
         var span = this.array.AsSpan();
@@ -88,6 +129,46 @@ public class FrozenDictionaryTest
             if (idx >= 0)
             {
                 sum += span[idx];
+            }
+        }
+
+        return sum;
+    }
+
+    [Benchmark]
+    public int FindArray2()
+    {
+        var span = this.array2.AsSpan();
+        var sum = 0;
+        foreach (var x in this.array)
+        {
+            for (var i = 0; i < this.array2.Length; i++)
+            {
+                if (this.array2[i].Item1 == x)
+                {
+                    sum += this.array2[i].Item2;
+                    break;
+                }
+            }
+        }
+
+        return sum;
+    }
+
+    [Benchmark]
+    public int FindKeyValueArray()
+    {
+        var span = this.keyValueArray.AsSpan();
+        var sum = 0;
+        foreach (var x in this.array)
+        {
+            for (var i = 0; i < span.Length; i++)
+            {
+                if (span[i].Key == x)
+                {
+                    sum += x;
+                    break;
+                }
             }
         }
 
