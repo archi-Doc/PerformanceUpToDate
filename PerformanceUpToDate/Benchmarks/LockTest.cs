@@ -12,6 +12,7 @@ namespace PerformanceUpToDate;
 public class LockTest
 {
     private object syncObject = new();
+    private Lock lockObject = new();
     private Semaphore semaphore = new(1, 1);
     private SemaphoreSlim semaphoreSlim = new(1, 1);
     private SemaphoreLock semaphoreLock = new();
@@ -42,7 +43,7 @@ public class LockTest
         => new();
 
     [Benchmark]
-    public void Lock()
+    public void Sync()
     {
         lock (this.syncObject)
         {
@@ -63,6 +64,14 @@ public class LockTest
             {
                 Monitor.Exit(this.syncObject);
             }
+        }
+    }
+
+    [Benchmark]
+    public void Lock()
+    {
+        using (this.lockObject.EnterScope())
+        {
         }
     }
 
