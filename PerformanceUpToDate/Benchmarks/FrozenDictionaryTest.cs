@@ -34,6 +34,7 @@ public class FrozenDictionaryTest
     private readonly Int32Hashtable<int> int32Hashtable;
     private readonly (int, int)[] array2;
     private readonly KeyValueStruct[] keyValueArray;
+    private readonly List<KeyValueStruct> list;
 
     public FrozenDictionaryTest()
     {
@@ -44,6 +45,7 @@ public class FrozenDictionaryTest
         this.int32Hashtable = this.CreateInt32Hashtable();
         this.array2 = this.CreateIntArray();
         this.keyValueArray = this.CreateKeyValueArray();
+        this.list = this.CreateList();
     }
 
     [Benchmark]
@@ -116,6 +118,18 @@ public class FrozenDictionaryTest
         }
 
         return array;
+    }
+
+    [Benchmark]
+    public List<KeyValueStruct> CreateList()
+    {
+        var list = new List<KeyValueStruct>(capacity: this.array.Length);
+        for (var i = 0; i < this.array.Length; i++)
+        {
+            list.Add(new(this.array[i], default));
+        }
+
+        return list;
     }
 
     [Benchmark]
@@ -232,6 +246,25 @@ public class FrozenDictionaryTest
             if (this.int32Hashtable.TryGetValue(x, out var v))
             {
                 sum += v;
+            }
+        }
+
+        return sum;
+    }
+
+    [Benchmark]
+    public int FindListy()
+    {
+        var sum = 0;
+        foreach (var x in this.array)
+        {
+            for (var i = 0; i < this.list.Count; i++)
+            {
+                if (this.list[i].Key == x)
+                {
+                    sum += x;
+                    break;
+                }
             }
         }
 
