@@ -253,7 +253,7 @@ public class FrozenDictionaryTest
     }
 
     [Benchmark]
-    public int FindListy()
+    public int FindList()
     {
         var sum = 0;
         foreach (var x in this.array)
