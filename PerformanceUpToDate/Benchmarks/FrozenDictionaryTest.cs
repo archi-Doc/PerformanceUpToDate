@@ -7,19 +7,22 @@ using System.Collections.Generic;
 using System.Linq;
 using Arc.Collections;
 using BenchmarkDotNet.Attributes;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace PerformanceUpToDate;
+
+public record class KeyValueClass(int Key);
 
 public readonly record struct KeyValueStruct
 {
     public readonly int Key;
 
-    public readonly FrozenDictionaryTest? Value;
+    public readonly KeyValueClass Value;
 
-    public KeyValueStruct(int key, FrozenDictionaryTest? value)
+    public KeyValueStruct(int key)
     {
         this.Key = key;
-        this.Value = value;
+        this.Value = new(key);
     }
 }
 
@@ -114,7 +117,7 @@ public class FrozenDictionaryTest
         var array = new KeyValueStruct[this.array.Length];
         for (var i = 0; i < this.array.Length; i++)
         {
-            array[i] = new(this.array[i], default);
+            array[i] = new(this.array[i]);
         }
 
         return array;
@@ -126,7 +129,7 @@ public class FrozenDictionaryTest
         var list = new List<KeyValueStruct>(capacity: this.array.Length);
         for (var i = 0; i < this.array.Length; i++)
         {
-            list.Add(new(this.array[i], default));
+            list.Add(new(this.array[i]));
         }
 
         return list;
@@ -179,6 +182,26 @@ public class FrozenDictionaryTest
             for (var i = 0; i < span.Length; i++)
             {
                 if (span[i].Key == x)
+                {
+                    sum += x;
+                    break;
+                }
+            }
+        }
+
+        return sum;
+    }
+
+    [Benchmark]
+    public int FindKeyValueArray2()
+    {
+        var span = this.keyValueArray.AsSpan();
+        var sum = 0;
+        foreach (var x in this.array)
+        {
+            for (var i = 0; i < span.Length; i++)
+            {
+                if (span[i].Value.Key == x)
                 {
                     sum += x;
                     break;
