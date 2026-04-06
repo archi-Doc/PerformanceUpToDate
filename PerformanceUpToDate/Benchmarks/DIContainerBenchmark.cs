@@ -29,6 +29,16 @@ public class SimpleScopedClass
     public string Text { get; set; } = "Test";
 }
 
+public class SimpleScopedClass2
+{
+    public SimpleScopedClass2(SimpleScopedClass c)
+    {
+        this.Class = c;
+    }
+
+    public SimpleScopedClass Class { get; }
+}
+
 public class SimpleSingletonClass
 {
     public SimpleSingletonClass()
@@ -54,6 +64,7 @@ public class DIContainerBenchmark
         var sc = new ServiceCollection();
         sc.AddTransient<SimpleTransientClass>();
         sc.AddScoped<SimpleScopedClass>();
+        sc.AddScoped<SimpleScopedClass2>();
         sc.AddSingleton<SimpleSingletonClass>();
 
         this.serviceProvider = sc.BuildServiceProvider();
@@ -62,6 +73,7 @@ public class DIContainerBenchmark
         this.container = new DryIoc.Container();
         this.container.Register<SimpleTransientClass>(Reuse.Transient);
         this.container.Register<SimpleScopedClass>(Reuse.Scoped);
+        this.container.Register<SimpleScopedClass2>(Reuse.Scoped);
         this.container.Register<SimpleSingletonClass>(Reuse.Singleton);
         this.serviceScope2 = this.container.OpenScope();
     }
@@ -87,6 +99,14 @@ public class DIContainerBenchmark
         => this.serviceScope2.Resolve<SimpleScopedClass>();
 
     [Benchmark]
+    public SimpleScopedClass2 Scoped2_Ms()
+        => this.serviceScope.ServiceProvider.GetRequiredService<SimpleScopedClass2>();
+
+    [Benchmark]
+    public SimpleScopedClass2 Scoped2_Dry()
+        => this.serviceScope2.Resolve<SimpleScopedClass2>();
+
+    /*[Benchmark]
     public SimpleScopedClass Scoped2_Ms()
     {
         using (var scope = this.serviceProvider.CreateScope())
@@ -110,5 +130,5 @@ public class DIContainerBenchmark
 
     [Benchmark]
     public SimpleSingletonClass Singleton_Dry()
-        => this.container.Resolve<SimpleSingletonClass>();
+        => this.container.Resolve<SimpleSingletonClass>();*/
 }
