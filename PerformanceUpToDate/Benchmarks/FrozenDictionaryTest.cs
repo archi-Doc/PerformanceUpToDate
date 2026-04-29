@@ -1,13 +1,30 @@
 ﻿// Copyright (c) All contributors. All rights reserved. Licensed under the MIT license.
 
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Linq;
 using Arc.Collections;
 using BenchmarkDotNet.Attributes;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace PerformanceUpToDate;
+
+public record class KeyValueClass(int Key);
+
+public readonly record struct KeyValueStruct
+{
+    public readonly int Key;
+
+    public readonly KeyValueClass Value;
+
+    public KeyValueStruct(int key)
+    {
+        this.Key = key;
+        this.Value = new(key);
+    }
+}
 
 [Config(typeof(BenchmarkConfig))]
 public class FrozenDictionaryTest
@@ -17,6 +34,10 @@ public class FrozenDictionaryTest
     private readonly FrozenDictionary<int, int> frozenDictionary;
     private readonly UnorderedMap<int, int> map;
     private readonly ConcurrentDictionary<int, int> concurrentDictionary;
+    private readonly Int32Hashtable<int> int32Hashtable;
+    private readonly (int, int)[] array2;
+    private readonly KeyValueStruct[] keyValueArray;
+    private readonly List<KeyValueStruct> list;
 
     public FrozenDictionaryTest()
     {
@@ -24,6 +45,10 @@ public class FrozenDictionaryTest
         this.frozenDictionary = this.CreateFrozenDictionary();
         this.map = this.CreateUnorderedMap();
         this.concurrentDictionary = this.CreateConcurrentDictionary();
+        this.int32Hashtable = this.CreateInt32Hashtable();
+        this.array2 = this.CreateIntArray();
+        this.keyValueArray = this.CreateKeyValueArray();
+        this.list = this.CreateList();
     }
 
     [Benchmark]
@@ -60,6 +85,131 @@ public class FrozenDictionaryTest
         }
 
         return concurrentDictionary;
+    }
+
+    [Benchmark]
+    public Int32Hashtable<int> CreateInt32Hashtable()
+    {
+        var hashtable = new Int32Hashtable<int>();
+        foreach (var x in this.array)
+        {
+            hashtable.TryAdd(x, x);
+        }
+
+        return hashtable;
+    }
+
+    [Benchmark]
+    public (int, int)[] CreateIntArray()
+    {
+        var array2 = new (int, int)[this.array.Length];
+        for (var i = 0; i < this.array.Length; i++)
+        {
+            array2[i] = (this.array[i], this.array[i]);
+        }
+
+        return array2;
+    }
+
+    [Benchmark]
+    public KeyValueStruct[] CreateKeyValueArray()
+    {
+        var array = new KeyValueStruct[this.array.Length];
+        for (var i = 0; i < this.array.Length; i++)
+        {
+            array[i] = new(this.array[i]);
+        }
+
+        return array;
+    }
+
+    [Benchmark]
+    public List<KeyValueStruct> CreateList()
+    {
+        var list = new List<KeyValueStruct>(capacity: this.array.Length);
+        for (var i = 0; i < this.array.Length; i++)
+        {
+            list.Add(new(this.array[i]));
+        }
+
+        return list;
+    }
+
+    [Benchmark]
+    public int FindArray()
+    {
+        var span = this.array.AsSpan();
+        var sum = 0;
+        foreach (var x in this.array)
+        {
+            var idx = span.IndexOf(x);
+            if (idx >= 0)
+            {
+                sum += span[idx];
+            }
+        }
+
+        return sum;
+    }
+
+    [Benchmark]
+    public int FindArray2()
+    {
+        var span = this.array2.AsSpan();
+        var sum = 0;
+        foreach (var x in this.array)
+        {
+            for (var i = 0; i < this.array2.Length; i++)
+            {
+                if (this.array2[i].Item1 == x)
+                {
+                    sum += this.array2[i].Item2;
+                    break;
+                }
+            }
+        }
+
+        return sum;
+    }
+
+    [Benchmark]
+    public int FindKeyValueArray()
+    {
+        var span = this.keyValueArray.AsSpan();
+        var sum = 0;
+        foreach (var x in this.array)
+        {
+            for (var i = 0; i < span.Length; i++)
+            {
+                if (span[i].Key == x)
+                {
+                    sum += x;
+                    break;
+                }
+            }
+        }
+
+        return sum;
+    }
+
+    [Benchmark]
+    public int FindKeyValueArray2()
+    {
+        var span = this.keyValueArray.AsSpan();
+        var sum = 0;
+        foreach (var x in this.array)
+        {
+            for (var i = 0; i < span.Length; i++)
+            {
+                if (span[i].Value.Key == x)
+                {
+                    sum += x;
+                    break;
+                }
+            }
+        }
+
+        return sum;
     }
 
     [Benchmark]
@@ -105,6 +255,40 @@ public class FrozenDictionaryTest
         foreach (var x in this.array)
         {
             sum += this.concurrentDictionary[x];
+        }
+
+        return sum;
+    }
+
+    [Benchmark]
+    public int FindInt32Hashtable()
+    {
+        var sum = 0;
+        foreach (var x in this.array)
+        {
+            if (this.int32Hashtable.TryGetValue(x, out var v))
+            {
+                sum += v;
+            }
+        }
+
+        return sum;
+    }
+
+    [Benchmark]
+    public int FindList()
+    {
+        var sum = 0;
+        foreach (var x in this.array)
+        {
+            for (var i = 0; i < this.list.Count; i++)
+            {
+                if (this.list[i].Key == x)
+                {
+                    sum += x;
+                    break;
+                }
+            }
         }
 
         return sum;

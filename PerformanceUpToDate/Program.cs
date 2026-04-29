@@ -23,12 +23,22 @@ public class Program
 {
     public static void Main(string[] args)
     {
-        DebugRun<ConcurrentTest2>();
+        DebugRun<CancellationTokenTest2>();
 
         // var summary = BenchmarkRunner.Run<ByteCopyTest>(); // SwapTest, MemoryAllocationTest, ByteCopyTest
         var switcher = new BenchmarkSwitcher(new[]
 #pragma warning restore SA1515 // Single-line comment should be preceded by blank line
         {
+            typeof(CancellationTokenTest2),
+            typeof(QueueTest),
+            typeof(FuncTest),
+            typeof(AssignableTest),
+            typeof(NullableStructTest),
+            typeof(RefArrayTest),
+            typeof(ContextClassTest),
+            typeof(IdCacheTest),
+            typeof(CopySpanTest),
+            typeof(CountTripleQuotesTest),
             typeof(ConcurrentTest2),
             typeof(ConsoleWriteTest),
             typeof(SumSbyteTest),
