@@ -2,17 +2,27 @@
 
 using System;
 using System.Runtime.InteropServices;
+using Arc.Collections;
 using BenchmarkDotNet.Attributes;
 
 namespace PerformanceUpToDate;
 
+public class AllocationTestClass
+{
+    public long Id { get; set; }
+
+    public long Id2 { get; set; }
+}
+
 [Config(typeof(BenchmarkConfig))]
 public partial class AllocationTest
 {
-    private const int Size = 32;
+    private const int Size = 256;
     private const uint ZeroMemory = 0x00000008;
 
     private readonly nint heap;
+    private readonly ObjectPool<AllocationTestClass> pool = new(() => new());
+    private readonly CircularQueue<AllocationTestClass> queue = new(32);
 
     /*[DllImport("kernel32.dll", SetLastError = true)]
     private static extern nint GetProcessHeap();
@@ -38,11 +48,36 @@ public partial class AllocationTest
     internal static partial bool HeapFree(
         IntPtr hHeap,
         uint dwFlags,
-        IntPtr lpMem);
+        IntPtr lpMem
+        );
 
     public AllocationTest()
     {
         this.heap = GetProcessHeap();
+        this.queue.TryEnqueue(new());
+        this.queue.TryEnqueue(new());
+    }
+
+    [Benchmark]
+    public AllocationTestClass NewClass()
+    {
+        return new AllocationTestClass();
+    }
+
+    [Benchmark]
+    public AllocationTestClass PoolClass()
+    {
+        var c = this.pool.Rent();
+        this.pool.Return(c);
+        return c;
+    }
+
+    [Benchmark]
+    public AllocationTestClass QueueClass()
+    {
+        this.queue.TryDequeue(out var c);
+        this.queue.TryEnqueue(c!);
+        return c!;
     }
 
     [Benchmark]
