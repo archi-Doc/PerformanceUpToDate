@@ -7,14 +7,14 @@ using BenchmarkDotNet.Attributes;
 namespace PerformanceUpToDate;
 
 [Config(typeof(BenchmarkConfig))]
-public class AllocationTest
+public partial class AllocationTest
 {
     private const int Size = 32;
     private const uint ZeroMemory = 0x00000008;
 
     private readonly nint heap;
 
-    [DllImport("kernel32.dll", SetLastError = true)]
+    /*[DllImport("kernel32.dll", SetLastError = true)]
     private static extern nint GetProcessHeap();
 
     [DllImport("kernel32.dll", SetLastError = true)]
@@ -22,7 +22,23 @@ public class AllocationTest
 
     [DllImport("kernel32.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
-    private static extern bool HeapFree(nint hHeap, uint dwFlags, nint lpMem);
+    private static extern bool HeapFree(nint hHeap, uint dwFlags, nint lpMem);*/
+
+    [LibraryImport("kernel32.dll", SetLastError = true)]
+    internal static partial IntPtr GetProcessHeap();
+
+    [LibraryImport("kernel32.dll", SetLastError = true)]
+    internal static partial IntPtr HeapAlloc(
+        IntPtr hHeap,
+        uint dwFlags,
+        nuint dwBytes);
+
+    [LibraryImport("kernel32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    internal static partial bool HeapFree(
+        IntPtr hHeap,
+        uint dwFlags,
+        IntPtr lpMem);
 
     public AllocationTest()
     {
