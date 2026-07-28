@@ -40,13 +40,13 @@ public class WriteToTest
     {
     }
 
-    //[Benchmark]
+    [Benchmark]
     public string StringJoin()
     {
         return $"alias {string.Join('.', this.list)}";
     }
 
-    //[Benchmark]
+    [Benchmark]
     public string StringBuilder()
     {
         var sb = new StringBuilder();
@@ -63,7 +63,7 @@ public class WriteToTest
         return sb.ToString();
     }
 
-    //[Benchmark]
+    [Benchmark]
     public string IndentWriter()
     {
         var sb = new IndentWriter();
