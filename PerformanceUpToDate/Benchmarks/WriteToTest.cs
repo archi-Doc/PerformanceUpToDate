@@ -99,4 +99,22 @@ public class WriteToTest
         sb.Dispose();
         return tx;
     }
+
+    [Benchmark]
+    public string RefStringBuilder()
+    {
+        using var sb = new RefStringBuilder();
+        sb.AddRange("alias ");
+        for (var i = 0; i < list.Count; i++)
+        {
+            sb.AddRange(this.list[i]);
+            if (i < list.Count - 1)
+            {
+                sb.Add('.');
+            }
+        }
+
+        var tx = sb.ToString();
+        return tx;
+    }
 }
