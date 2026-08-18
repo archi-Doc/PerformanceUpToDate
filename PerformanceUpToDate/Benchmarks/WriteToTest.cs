@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Arc.Collections;
 using BenchmarkDotNet.Attributes;
 using CommandLine.Text;
 using Kimi.Compiler.Lexing;
@@ -111,6 +112,24 @@ public class WriteToTest
             if (i < list.Count - 1)
             {
                 sb.Add('.');
+            }
+        }
+
+        var tx = sb.ToString();
+        return tx;
+    }
+
+    [Benchmark]
+    public string PooledStringBuilder()
+    {
+        using var sb = new PooledStringBuilder();
+        sb.Append("alias ");
+        for (var i = 0; i < list.Count; i++)
+        {
+            sb.Append(this.list[i]);
+            if (i < list.Count - 1)
+            {
+                sb.Append('.');
             }
         }
 
